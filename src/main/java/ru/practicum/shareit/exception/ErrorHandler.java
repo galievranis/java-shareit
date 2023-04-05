@@ -18,10 +18,17 @@ public class ErrorHandler {
         return Map.of(ERROR, e.getMessage());
     }
 
-    @ExceptionHandler({ObjectDoesNotExist.class})
+    @ExceptionHandler({ObjectNotFound.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public Map<String, String> handleObjectDoesNotExistException(final ObjectDoesNotExist e) {
+    public Map<String, String> handleObjectNotFoundException(final ObjectNotFound e) {
         log.warn("Запрашиваемый объект не найден.");
+        return Map.of(ERROR, e.getMessage());
+    }
+
+    @ExceptionHandler({DuplicateEmailException.class})
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public Map<String, String> handleDuplicateEmailException(final DuplicateEmailException e) {
+        log.warn("Пользователь с таким email уже существует.");
         return Map.of(ERROR, e.getMessage());
     }
 }
