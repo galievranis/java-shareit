@@ -14,6 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 @RequestMapping("/items")
 public class ItemController {
+
     private final String userIdHeader = "X-Sharer-User-Id";
     private final ItemService itemService;
 

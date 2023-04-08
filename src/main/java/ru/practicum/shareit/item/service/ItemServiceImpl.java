@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @Service
 public class ItemServiceImpl implements ItemService {
+
     private final ItemRepository itemRepository;
     private final UserService userService;
 
@@ -47,7 +48,7 @@ public class ItemServiceImpl implements ItemService {
             throw new PermissionDeniedException(
                     String.format("Пользователь с ID %d не может редактировать этот файл.", userId));
         }
-        // TODO передать в репозиторий данные itemDto
+
         return ItemMapper.toItemDto(itemRepository.update(itemId, itemDto));
     }
 
@@ -90,6 +91,7 @@ public class ItemServiceImpl implements ItemService {
      */
 
     private void validateItemFields(ItemDto itemDto) {
+
         if (itemDto.getName() == null || itemDto.getName().isEmpty()) {
             log.debug("Отсутствует название вещи.");
             throw new IllegalArgumentException("Отсутствует название вещи.");

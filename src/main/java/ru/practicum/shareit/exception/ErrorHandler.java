@@ -12,6 +12,7 @@ import java.util.NoSuchElementException;
 @Slf4j
 @RestControllerAdvice
 public class ErrorHandler {
+
     private static final String ERROR = "error";
 
     @ExceptionHandler({IllegalArgumentException.class})

@@ -10,6 +10,7 @@ import java.util.*;
 @Slf4j
 @Repository
 public class InMemoryUserRepository implements UserRepository {
+
     private final Map<Long, User> users = new HashMap<>();
     private Long generatedId = 1L;
 
