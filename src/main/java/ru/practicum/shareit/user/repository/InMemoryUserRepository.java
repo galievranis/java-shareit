@@ -3,15 +3,13 @@ package ru.practicum.shareit.user.repository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.*;
 
 @Slf4j
 @Repository
-public class UserRepositoryImpl implements UserRepository {
-
+public class InMemoryUserRepository implements UserRepository {
     private final Map<Long, User> users = new HashMap<>();
     private Long generatedId = 1L;
 
@@ -24,7 +22,7 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public UserDto update(Long userId, UserDto userDto) {
+    public User update(Long userId, UserDto userDto) {
         User userToUpdate = users.get(userId);
 
         if (userDto.getName() != null) {
@@ -37,7 +35,7 @@ public class UserRepositoryImpl implements UserRepository {
 
         users.put(userId, userToUpdate);
         log.debug("Пользователь с ID {} обновлен.", userToUpdate.getId());
-        return UserMapper.toUserDto(userToUpdate);
+        return userToUpdate;
     }
 
     @Override
@@ -48,8 +46,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public Optional<User> getById(Long id) {
-        log.debug("Получен пользователь с ID {}.", id);
-        return Optional.of(users.get(id));
+        return Optional.ofNullable(users.get(id));
     }
 
     @Override

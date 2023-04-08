@@ -8,7 +8,7 @@ import java.util.Optional;
 
 public interface UserRepository {
     User create(User user);
-    UserDto update(Long userId, UserDto userDto);
+    User update(Long userId, UserDto userDto);
     List<User> getAll();
     Optional<User> getById(Long id);
     void deleteById(Long id);
