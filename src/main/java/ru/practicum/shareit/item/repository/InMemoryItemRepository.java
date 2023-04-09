@@ -13,53 +13,58 @@ import java.util.stream.Collectors;
 public class InMemoryItemRepository implements ItemRepository {
 
     private Long generatedId = 1L;
-    private final Map<Long, Item> items = new HashMap<>();
+    private final Map<Long, List<Item>> userItemIndex = new LinkedHashMap<>();
 
     @Override
     public Item create(Item item) {
         item.setId(generatedId++);
-        items.put(item.getId(), item);
+        final List<Item> items = userItemIndex.computeIfAbsent(
+                item.getOwnerId(), k -> new ArrayList<>());
+        items.add(item);
+        userItemIndex.put(item.getOwnerId(), items);
+
         log.debug("Вещь с ID {} создан.", item.getId());
         return item;
     }
 
     @Override
-    public Item update(Long itemId, ItemDto itemDto) {
-        Item oldItem = items.get(itemId);
+    public Item update(Item oldItem, ItemDto newItem) {
 
-        if (itemDto.getName() != null) {
-            oldItem.setName(itemDto.getName());
+        if (newItem.getName() != null && !newItem.getName().isBlank()) {
+            oldItem.setName(newItem.getName());
         }
 
-        if (itemDto.getDescription() != null) {
-            oldItem.setDescription(itemDto.getDescription());
+        if (newItem.getDescription() != null && !newItem.getDescription().isBlank()) {
+            oldItem.setDescription(newItem.getDescription());
         }
 
-        if (itemDto.getAvailable() != null) {
-            oldItem.setAvailable(itemDto.getAvailable());
+        if (newItem.getAvailable() != null) {
+            oldItem.setAvailable(newItem.getAvailable());
         }
 
-        return items.put(oldItem.getId(), oldItem);
+        return oldItem;
     }
 
     @Override
     public List<Item> getAll(Long userId) {
-        return items.values().stream()
-                .filter(i -> i.getOwnerId().equals(userId))
-                .collect(Collectors.toList());
+        return userItemIndex.get(userId);
     }
 
     @Override
     public Optional<Item> getById(Long itemId) {
-        return Optional.ofNullable(items.get(itemId));
+        return userItemIndex.values().stream()
+                .flatMap(Collection::stream)
+                .filter(item -> item.getId().equals(itemId))
+                .findFirst();
     }
 
     @Override
     public List<Item> searchItem(String searchCriteria) {
         log.debug("Получен список вещей согласно критерию поиска.");
-        return items.values().stream()
-                .filter(i -> i.getName().toLowerCase(Locale.ROOT).contains(searchCriteria)
-                || i.getDescription().toLowerCase(Locale.ROOT).contains(searchCriteria))
+        return userItemIndex.values().stream()
+                .flatMap(Collection::stream)
+                .filter(item -> item.getName().toLowerCase(Locale.ROOT).contains(searchCriteria)
+                || item.getDescription().toLowerCase(Locale.ROOT).contains(searchCriteria))
                 .filter(Item::getAvailable)
                 .collect(Collectors.toList());
     }

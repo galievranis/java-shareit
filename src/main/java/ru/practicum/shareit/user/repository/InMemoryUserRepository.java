@@ -3,6 +3,7 @@ package ru.practicum.shareit.user.repository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.*;
@@ -15,26 +16,25 @@ public class InMemoryUserRepository implements UserRepository {
     private Long generatedId = 1L;
 
     @Override
-    public User create(User user) {
-        user.setId(generatedId++);
-        users.put(user.getId(), user);
-        log.debug("Пользователь с ID {} создан.", user.getId());
-        return user;
+    public UserDto create(UserDto userDto) {
+        userDto.setId(generatedId++);
+        users.put(userDto.getId(), UserMapper.toUser(userDto));
+        log.debug("Пользователь с ID {} создан.", userDto.getId());
+        return userDto;
     }
 
     @Override
     public User update(Long userId, UserDto userDto) {
         User userToUpdate = users.get(userId);
 
-        if (userDto.getName() != null) {
+        if (userDto.getName() != null && !userDto.getName().isBlank()) {
             userToUpdate.setName(userDto.getName());
         }
 
-        if (userDto.getEmail() != null) {
+        if (userDto.getEmail() != null && !userDto.getEmail().isBlank()) {
             userToUpdate.setEmail(userDto.getEmail());
         }
 
-        users.put(userId, userToUpdate);
         log.debug("Пользователь с ID {} обновлен.", userToUpdate.getId());
         return userToUpdate;
     }

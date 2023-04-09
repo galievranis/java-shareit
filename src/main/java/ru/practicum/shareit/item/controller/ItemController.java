@@ -20,14 +20,14 @@ public class ItemController {
 
     @PostMapping
     public ItemDto createItem(@RequestHeader(userIdHeader) Long userId,
-                              @RequestBody @Valid ItemDto itemDto) {
+                              @Valid @RequestBody ItemDto itemDto) {
         log.info("POST запрос на добавление вещи.");
         return itemService.create(userId, itemDto);
     }
 
     @PatchMapping("{itemId}")
     public ItemDto updateItem(@RequestHeader(userIdHeader) Long userId,
-                              @RequestBody @Valid ItemDto itemDto,
+                              @RequestBody ItemDto itemDto,
                               @PathVariable Long itemId) {
         log.info("PATCH запрос на обновление вещи с ID {} от пользователя с ID {}.", itemId, userId);
         return itemService.update(userId, itemDto, itemId);
@@ -50,6 +50,11 @@ public class ItemController {
     public List<ItemDto> searchItem(@RequestHeader(userIdHeader) Long userId,
                                     @RequestParam(value = "text") String searchCriteria) {
         log.info("GET запрос на поиск вещей по критерию.");
+
+        if (searchCriteria.isBlank()) {
+            return List.of();
+        }
+
         return itemService.searchItem(userId, searchCriteria);
     }
 }

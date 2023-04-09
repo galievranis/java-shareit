@@ -9,7 +9,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import ru.practicum.shareit.item.controller.ItemController;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.user.controller.UserController;
-import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.user.dto.UserDto;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,12 +26,12 @@ public class InMemoryItemRepositoryTest {
 
     @BeforeEach
     public void beforeEach() {
-        User user = User.builder()
+        UserDto userDto = UserDto.builder()
                 .name("John")
                 .email("john@email.com")
                 .build();
 
-        userController.createUser(user);
+        userController.createUser(userDto);
     }
 
     @Test

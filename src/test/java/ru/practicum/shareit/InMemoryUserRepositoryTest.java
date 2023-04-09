@@ -7,8 +7,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.practicum.shareit.user.controller.UserController;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.mapper.UserMapper;
-import ru.practicum.shareit.user.model.User;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +23,7 @@ public class InMemoryUserRepositoryTest {
 
     @Test
     public void shouldCreateUser() {
-        User userToCreate = User.builder()
+        UserDto userToCreate = UserDto.builder()
                 .name("John")
                 .email("john@email.com")
                 .build();
@@ -43,7 +41,7 @@ public class InMemoryUserRepositoryTest {
 
     @Test
     public void shouldUpdateUserById() {
-        User userToCreate = User.builder()
+        UserDto userToCreate = UserDto.builder()
                 .name("John")
                 .email("john@email.com")
                 .build();
@@ -68,7 +66,7 @@ public class InMemoryUserRepositoryTest {
 
     @Test
     public void shouldDeleteUserById() {
-        User userToCreate = User.builder()
+        UserDto userToCreate = UserDto.builder()
                 .name("John")
                 .email("john@email.com")
                 .build();
@@ -82,12 +80,12 @@ public class InMemoryUserRepositoryTest {
 
     @Test
     public void shouldReturnAllUsers() {
-        User firstUser = User.builder()
+        UserDto firstUser = UserDto.builder()
                 .name("John")
                 .email("john@email.com")
                 .build();
 
-        User secondUser = User.builder()
+        UserDto secondUser = UserDto.builder()
                 .name("Alex")
                 .email("alex@email.com")
                 .build();
@@ -97,15 +95,15 @@ public class InMemoryUserRepositoryTest {
 
         List<UserDto> actualUsersList = userController.getAllUsers();
         List<UserDto> expectedUsersList = new ArrayList<>();
-        expectedUsersList.add(UserMapper.toUserDto(firstUser));
-        expectedUsersList.add(UserMapper.toUserDto(secondUser));
+        expectedUsersList.add(firstUser);
+        expectedUsersList.add(secondUser);
 
         assertEquals(expectedUsersList, actualUsersList, "Список пользователей не совпадает.");
     }
 
     @Test
     public void shouldReturnUserById() {
-        User userToCreate = User.builder()
+        UserDto userToCreate = UserDto.builder()
                 .name("John")
                 .email("john@email.com")
                 .build();

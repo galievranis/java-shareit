@@ -11,7 +11,6 @@ import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -22,15 +21,19 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     @Override
-    public UserDto create(User user) {
-        validateUserEmailWhenCreate(user.getEmail());
-        return UserMapper.toUserDto(userRepository.create(user));
+    public UserDto create(UserDto userDto) {
+        validateUserEmailWhenCreate(userDto.getEmail());
+        return userRepository.create(userDto);
     }
 
     @Override
     public UserDto update(Long id, UserDto userDto) {
         getById(id);
-        validateUserEmailWhenUpdate(id, userDto.getEmail());
+
+        if (userDto.getEmail() != null) {
+            validateUserEmailWhenUpdate(id, userDto.getEmail());
+        }
+
         return UserMapper.toUserDto(userRepository.update(id, userDto));
     }
 
@@ -43,16 +46,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto getById(Long id) {
-        Optional<User> user = userRepository.getById(id);
-
-        if (user.isEmpty()) {
-            log.debug("Пользователь с ID {} не найден.", id);
-            throw new NoSuchElementException(
-                    String.format("Пользователь с ID %d не найден.", id));
-        }
+        User user = userRepository.getById(id).orElseThrow(() ->
+                new NoSuchElementException(
+                        String.format("Пользователь с ID %d не найден.", id)));
 
         log.debug("Получен пользователь с ID {}.", id);
-        return UserMapper.toUserDto(user.get());
+        return UserMapper.toUserDto(user);
     }
 
 
