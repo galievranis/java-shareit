@@ -12,16 +12,16 @@ import java.util.stream.Collectors;
 @Repository
 public class InMemoryItemRepository implements ItemRepository {
     private Long generatedId = 1L;
+    private final Map<Long, Item> itemsMap = new HashMap<>();
     private final Map<Long, List<Item>> userItemIndex = new LinkedHashMap<>();
 
     @Override
     public Item create(Item item) {
         item.setId(generatedId++);
+        itemsMap.put(item.getId(), item);
         final List<Item> items = userItemIndex.computeIfAbsent(
                 item.getOwnerId(), k -> new ArrayList<>());
         items.add(item);
-        userItemIndex.put(item.getOwnerId(), items);
-
         log.debug("Вещь с ID {} создан.", item.getId());
         return item;
     }
@@ -51,10 +51,7 @@ public class InMemoryItemRepository implements ItemRepository {
 
     @Override
     public Optional<Item> getById(Long itemId) {
-        return userItemIndex.values().stream()
-                .flatMap(Collection::stream)
-                .filter(item -> item.getId().equals(itemId))
-                .findFirst();
+        return Optional.ofNullable(itemsMap.get(itemId));
     }
 
     @Override
@@ -62,9 +59,13 @@ public class InMemoryItemRepository implements ItemRepository {
         log.debug("Получен список вещей согласно критерию поиска.");
         return userItemIndex.values().stream()
                 .flatMap(Collection::stream)
-                .filter(item -> item.getName().toLowerCase(Locale.ROOT).contains(searchCriteria)
-                || item.getDescription().toLowerCase(Locale.ROOT).contains(searchCriteria))
-                .filter(Item::getAvailable)
+                .filter(item -> isEligibleForSearchCriteria(searchCriteria, item))
                 .collect(Collectors.toList());
+    }
+
+    private boolean isEligibleForSearchCriteria(String searchCriteria, Item item) {
+        return item.getAvailable()
+                && (item.getName().toLowerCase(Locale.ROOT).contains(searchCriteria)
+                || item.getDescription().toLowerCase(Locale.ROOT).contains(searchCriteria));
     }
 }

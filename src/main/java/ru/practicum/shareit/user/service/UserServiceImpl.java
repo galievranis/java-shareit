@@ -30,7 +30,7 @@ public class UserServiceImpl implements UserService {
     public UserDto update(Long id, UserDto userDto) {
         getById(id);
 
-        if (userDto.getEmail() != null) {
+        if (userDto.getEmail() != null && !userDto.getEmail().isBlank()) {
             validateUserEmailWhenUpdate(id, userDto.getEmail());
         }
 
