@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 @Slf4j
 @Repository
 public class InMemoryItemRepository implements ItemRepository {
-
     private Long generatedId = 1L;
     private final Map<Long, List<Item>> userItemIndex = new LinkedHashMap<>();
 
