@@ -1,6 +1,6 @@
 package ru.practicum.shareit.request;
 
-import lombok.Data;
+import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import ru.practicum.shareit.user.model.entity.User;
@@ -8,8 +8,12 @@ import ru.practicum.shareit.user.model.entity.User;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
 @Entity
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "requests")
 public class ItemRequest {
     @Id

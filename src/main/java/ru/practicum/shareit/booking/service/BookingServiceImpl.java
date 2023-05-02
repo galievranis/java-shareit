@@ -59,12 +59,10 @@ public class BookingServiceImpl implements BookingService {
         validateBookingWhenUpdate(booking, item, userId);
 
         booking.setStatus(approved ? BookingStatus.APPROVED : BookingStatus.REJECTED);
-        bookingRepository.save(booking);
         return BookingMapper.toBookingResponseDto(booking);
     }
 
     @Override
-    @Transactional
     public BookingResponseDto getById(Long userId, Long bookingId) {
         userService.getById(userId);
         Booking booking = bookingRepository.findById(bookingId).orElseThrow(() ->
@@ -78,7 +76,6 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    @Transactional
     public List<BookingResponseDto> getByBookerId(Long userId, String state) {
         userService.getById(userId);
         BookingState bookingState = checkState(state);
@@ -102,7 +99,6 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    @Transactional
     public List<BookingResponseDto> getByOwnerId(Long userId, String state) {
         userService.getById(userId);
         BookingState bookingState = checkState(state);
@@ -125,7 +121,7 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
-    public BookingState checkState(String state) {
+    private BookingState checkState(String state) {
         try {
            return BookingState.valueOf(state);
         } catch (IllegalArgumentException e) {
@@ -141,10 +137,6 @@ public class BookingServiceImpl implements BookingService {
         if (!item.getAvailable()) {
             throw new NotAvailableException(
                     String.format("Item with ID: %d not available for booking.", item.getId()));
-        }
-
-        if (bookingDto.getStart().isAfter(bookingDto.getEnd())) {
-            throw new NotCorrectDateException("The booking start time should be before end time.");
         }
 
         if (bookingDto.getStart().isEqual(bookingDto.getEnd())) {

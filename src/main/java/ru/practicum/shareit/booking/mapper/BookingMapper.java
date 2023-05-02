@@ -15,18 +15,28 @@ import java.util.List;
 @UtilityClass
 public class BookingMapper {
 
-    public static BookingResponseDto toBookingResponseDto(Booking booking) {
+    public BookingResponseDto toBookingResponseDto(Booking booking) {
+        BookingResponseDto.Item item = BookingResponseDto.Item.builder()
+                .id(booking.getItem().getId())
+                .name(booking.getItem().getName())
+                .build();
+
+        BookingResponseDto.Booker booker = BookingResponseDto.Booker.builder()
+                .id(booking.getBooker().getId())
+                .name(booking.getBooker().getName())
+                .build();
+
         return BookingResponseDto.builder()
                 .id(booking.getId())
                 .start(booking.getStart())
                 .end(booking.getEnd())
                 .status(booking.getStatus())
-                .item(booking.getItem())
-                .booker(booking.getBooker())
+                .item(item)
+                .booker(booker)
                 .build();
     }
 
-    public static Booking toBooking(BookingDto bookingDto, Item item, User booker) {
+    public Booking toBooking(BookingDto bookingDto, Item item, User booker) {
         return Booking.builder()
                 .id(bookingDto.getId())
                 .start(bookingDto.getStart())
@@ -37,14 +47,14 @@ public class BookingMapper {
                 .build();
     }
 
-    public static BookingShortDto toBookingShortDto(Booking booking) {
+    public BookingShortDto toBookingShortDto(Booking booking) {
         return BookingShortDto.builder()
                 .id(booking.getId())
                 .bookerId(booking.getBooker().getId())
                 .build();
     }
 
-    public static List<BookingResponseDto> toBookingResponseDto(Iterable<Booking> bookings) {
+    public List<BookingResponseDto> toBookingResponseDto(Iterable<Booking> bookings) {
         List<BookingResponseDto> result = new ArrayList<>();
 
         for (Booking booking : bookings) {
