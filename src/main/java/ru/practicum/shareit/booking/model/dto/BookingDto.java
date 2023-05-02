@@ -13,12 +13,12 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@StartBeforeEndDateValid
 public class BookingDto {
     private long id;
 
     @NotNull
     @FutureOrPresent(message = "The start date of the booking can't be in the past time.")
-    @StartBeforeEndDateValid
     private LocalDateTime start;
 
     @NotNull
