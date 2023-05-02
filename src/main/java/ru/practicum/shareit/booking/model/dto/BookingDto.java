@@ -17,7 +17,6 @@ import java.time.LocalDateTime;
 public class BookingDto {
     private long id;
 
-    @NotNull
     @FutureOrPresent(message = "The start date of the booking can't be in the past time.")
     private LocalDateTime start;
 
