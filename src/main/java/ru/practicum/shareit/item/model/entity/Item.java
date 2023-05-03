@@ -1,4 +1,4 @@
-package ru.practicum.shareit.request;
+package ru.practicum.shareit.item.model.entity;
 
 import lombok.*;
 import org.hibernate.annotations.OnDelete;
@@ -6,28 +6,30 @@ import org.hibernate.annotations.OnDeleteAction;
 import ru.practicum.shareit.user.model.entity.User;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
-@Entity
 @Builder
-@AllArgsConstructor
+@Entity
 @NoArgsConstructor
-@Table(name = "requests")
-public class ItemRequest {
+@AllArgsConstructor
+@Table(name = "items")
+public class Item {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
+    @Column(nullable = false)
+    private String name;
+
+    @Column(nullable = false)
     private String description;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "requester_id", nullable = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    private User requester;
+    @Column(nullable = false)
+    private Boolean available;
 
-    @Column(columnDefinition = "TIMESTAMP")
-    private LocalDateTime created;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "owner_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private User owner;
 }

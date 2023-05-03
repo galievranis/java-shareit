@@ -1,4 +1,4 @@
-package ru.practicum.shareit.request;
+package ru.practicum.shareit.item.model.entity;
 
 import lombok.*;
 import org.hibernate.annotations.OnDelete;
@@ -12,21 +12,26 @@ import java.time.LocalDateTime;
 @Setter
 @Entity
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "requests")
-public class ItemRequest {
+@AllArgsConstructor
+@Table(name = "comments")
+public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
-    private String description;
+    @Column(nullable = false)
+    private String text;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "requester_id", nullable = false)
+    @JoinColumn(name = "item_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private User requester;
+    private Item item;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "author_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private User author;
 
     @Column(columnDefinition = "TIMESTAMP")
     private LocalDateTime created;

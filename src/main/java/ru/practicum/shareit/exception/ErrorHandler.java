@@ -7,54 +7,61 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import javax.validation.ConstraintViolationException;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
 @Slf4j
 @RestControllerAdvice
 public class ErrorHandler {
-
     private static final String ERROR = "error";
 
-    @ExceptionHandler({IllegalArgumentException.class})
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, String> handleIllegalArgumentEx(final RuntimeException e) {
-        log.warn("Некорректное значение. Детали ошибки: {}.", e.getMessage());
+    @ExceptionHandler({Exception.class})
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public Map<String, String> handleException(final Exception e) {
+        log.warn("Unexpected error has occurred. Error details: {}.", e.getMessage());
         return Map.of(ERROR, e.getMessage());
     }
 
     @ExceptionHandler({NoSuchElementException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Map<String, String> handleNoSuchElementException(final NoSuchElementException e) {
-        log.warn("Запрашиваемый объект не найден. Детали ошибки: {}.", e.getMessage());
-        return Map.of(ERROR, e.getMessage());
-    }
-
-    @ExceptionHandler({DuplicateEmailException.class})
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public Map<String, String> handleDuplicateEmailException(final DuplicateEmailException e) {
-        log.warn("Пользователь с таким email уже существует. детали ошибки: {}.", e.getMessage());
+        log.warn("Requested object was not found. Error details: {}.", e.getMessage());
         return Map.of(ERROR, e.getMessage());
     }
 
     @ExceptionHandler({PermissionDeniedException.class})
-    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     public Map<String, String> handlePermissionDeniedException(final PermissionDeniedException e) {
-        log.warn("У вас нет прав на редактирование. Детали ошибки: {}.", e.getMessage());
-        return Map.of(ERROR, e.getMessage());
-    }
-
-    @ExceptionHandler({Exception.class})
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public Map<String, String> handleException(final Exception e) {
-        log.warn("Возникла непредвиденная ошибка. Детали ошибки: {}.", e.getMessage());
+        log.warn("You don't have enough permissions to edit. Error details: {}.", e.getMessage());
         return Map.of(ERROR, e.getMessage());
     }
 
     @ExceptionHandler({MethodArgumentNotValidException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handleMethodArgumentNotValidException(final MethodArgumentNotValidException e) {
-        log.warn("Некорректные данные от пользователя. Детали ошибки: {}.", e.getMessage());
+        log.warn("Incorrect data from the user. Error details: {}.", e.getMessage());
+        return Map.of(ERROR, e.getMessage());
+    }
+
+    @ExceptionHandler({NotAvailableException.class})
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleNotAvailableException(final NotAvailableException e) {
+        log.warn("Item isn't available for booking. Error details: {}.", e.getMessage());
+        return Map.of(ERROR, e.getMessage());
+    }
+
+    @ExceptionHandler({IllegalArgumentException.class})
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleIllegalArgumentEx(final RuntimeException e) {
+        log.warn("Invalid value. Error details: {}.", e.getMessage());
+        return Map.of(ERROR, e.getMessage());
+    }
+
+    @ExceptionHandler({ConstraintViolationException.class})
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleConstraintViolationException(ConstraintViolationException e) {
+        log.info(e.getMessage());
         return Map.of(ERROR, e.getMessage());
     }
 }
