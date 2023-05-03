@@ -23,13 +23,6 @@ public class ErrorHandler {
         return Map.of(ERROR, e.getMessage());
     }
 
-    @ExceptionHandler({DuplicateEmailException.class})
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public Map<String, String> handleDuplicateEmailException(final DuplicateEmailException e) {
-        log.warn("User with this email already exists. Error details: {}.", e.getMessage());
-        return Map.of(ERROR, e.getMessage());
-    }
-
     @ExceptionHandler({NoSuchElementException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Map<String, String> handleNoSuchElementException(final NoSuchElementException e) {
@@ -44,13 +37,6 @@ public class ErrorHandler {
         return Map.of(ERROR, e.getMessage());
     }
 
-    @ExceptionHandler({BadRequestException.class})
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public Map<String, String> handleBadRequestException(final BadRequestException e) {
-        log.warn("Invalid request. Error details: {}.", e.getMessage());
-        return Map.of(ERROR, e.getMessage());
-    }
-
     @ExceptionHandler({MethodArgumentNotValidException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handleMethodArgumentNotValidException(final MethodArgumentNotValidException e) {
@@ -62,13 +48,6 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handleNotAvailableException(final NotAvailableException e) {
         log.warn("Item isn't available for booking. Error details: {}.", e.getMessage());
-        return Map.of(ERROR, e.getMessage());
-    }
-
-    @ExceptionHandler({NotCorrectDateException.class})
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, String> handleNotCorrectDateException(final NotCorrectDateException e) {
-        log.warn("Incorrect booking date. Error details: {}.", e.getMessage());
         return Map.of(ERROR, e.getMessage());
     }
 

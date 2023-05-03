@@ -10,7 +10,6 @@ import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.entity.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.NotAvailableException;
-import ru.practicum.shareit.exception.NotCorrectDateException;
 import ru.practicum.shareit.exception.PermissionDeniedException;
 import ru.practicum.shareit.item.model.entity.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
@@ -40,7 +39,7 @@ public class BookingServiceImpl implements BookingService {
         Item item = itemRepository.findById(itemId).orElseThrow(() ->
                 new NoSuchElementException(String.format("Item with ID: %d not found.", itemId)));
 
-        validateBookingWhenCreate(bookingDto, item, userId);
+        validateBookingWhenCreate(item, userId);
 
         Booking booking = BookingMapper.toBooking(bookingDto, item, booker);
         return BookingMapper.toBookingResponseDto(bookingRepository.save(booking));
@@ -129,7 +128,7 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
-    private void validateBookingWhenCreate(BookingDto bookingDto, Item item, Long userId) {
+    private void validateBookingWhenCreate(Item item, Long userId) {
         if (Objects.equals(item.getOwner().getId(), userId)) {
             throw new PermissionDeniedException("You can't book your own item.");
         }
@@ -137,10 +136,6 @@ public class BookingServiceImpl implements BookingService {
         if (!item.getAvailable()) {
             throw new NotAvailableException(
                     String.format("Item with ID: %d not available for booking.", item.getId()));
-        }
-
-        if (bookingDto.getStart().isEqual(bookingDto.getEnd())) {
-            throw new NotCorrectDateException("The booking start time can't be equal to the end time.");
         }
     }
 

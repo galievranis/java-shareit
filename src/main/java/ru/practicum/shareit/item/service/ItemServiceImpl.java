@@ -105,8 +105,8 @@ public class ItemServiceImpl implements ItemService {
 
             if (!bookings.isEmpty()) {
                 Booking lastBooking = bookings.stream()
-                        .filter(booking -> booking.getStart().isBefore(now) || booking.getStart().isEqual(now))
-                        .findFirst()
+                        .filter(booking -> !booking.getStart().isAfter(now))
+                        .reduce((first, second) -> second)
                         .orElse(null);
                 Booking nextBooking = bookings.stream()
                         .filter(booking -> booking.getStart().isAfter(now))
