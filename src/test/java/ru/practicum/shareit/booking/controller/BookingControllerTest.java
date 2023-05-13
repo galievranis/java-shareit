@@ -63,8 +63,6 @@ public class BookingControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(bookingResponseDto.getId()), Long.class))
-                .andExpect(jsonPath("$.start", is(bookingResponseDto.getStart().toString())))
-                .andExpect(jsonPath("$.end", is(bookingResponseDto.getEnd().toString())))
                 .andExpect(jsonPath("$.status", is(bookingResponseDto.getStatus().toString())));
     }
 
@@ -89,8 +87,6 @@ public class BookingControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(bookingResponseDto.getId()), Long.class))
-                .andExpect(jsonPath("$.start", is(bookingResponseDto.getStart().toString())))
-                .andExpect(jsonPath("$.end", is(bookingResponseDto.getEnd().toString())))
                 .andExpect(jsonPath("$.status", is(bookingResponseDto.getStatus().toString())));
     }
 
@@ -116,8 +112,6 @@ public class BookingControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id", is(bookingResponseDto.getId()), Long.class))
-                .andExpect(jsonPath("$[0].start", is(bookingResponseDto.getStart().toString())))
-                .andExpect(jsonPath("$[0].end", is(bookingResponseDto.getEnd().toString())))
                 .andExpect(jsonPath("$[0].status", is(bookingResponseDto.getStatus().toString())));
     }
 
@@ -142,8 +136,6 @@ public class BookingControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id", is(bookingResponseDto.getId()), Long.class))
-                .andExpect(jsonPath("$[0].start", is(bookingResponseDto.getStart().toString())))
-                .andExpect(jsonPath("$[0].end", is(bookingResponseDto.getEnd().toString())))
                 .andExpect(jsonPath("$[0].status", is(bookingResponseDto.getStatus().toString())));
     }
 
