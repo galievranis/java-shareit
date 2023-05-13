@@ -3,6 +3,7 @@ package ru.practicum.shareit.item.mapper;
 import lombok.experimental.UtilityClass;
 import ru.practicum.shareit.item.model.dto.ItemDto;
 import ru.practicum.shareit.item.model.dto.ItemResponseDto;
+import ru.practicum.shareit.item.model.dto.ItemResponseShortDto;
 import ru.practicum.shareit.item.model.entity.Item;
 import ru.practicum.shareit.user.model.entity.User;
 
@@ -18,6 +19,7 @@ public class ItemMapper {
                 .name(item.getName())
                 .description(item.getDescription())
                 .available(item.getAvailable())
+                .requestId(item.getRequest() != null ? item.getRequest().getId() : null)
                 .build();
     }
 
@@ -31,11 +33,32 @@ public class ItemMapper {
                 .build();
     }
 
+    public ItemResponseShortDto toItemResponseShortDto(Item item) {
+        return ItemResponseShortDto.builder()
+                .id(item.getId())
+                .name(item.getName())
+                .description(item.getDescription())
+                .available(item.getAvailable())
+                .ownerId(item.getOwner().getId())
+                .requestId(item.getRequest() != null ? item.getRequest().getId() : null)
+                .build();
+    }
+
     public List<ItemResponseDto> toItemResponseDto(Iterable<Item> items) {
         List<ItemResponseDto> result = new ArrayList<>();
 
         for (Item item : items) {
             result.add(toItemResponseDto(item));
+        }
+
+        return result;
+    }
+
+    public List<ItemResponseShortDto> toItemResponseShortDto(Iterable<Item> items) {
+        List<ItemResponseShortDto> result = new ArrayList<>();
+
+        for (Item item : items) {
+            result.add(toItemResponseShortDto(item));
         }
 
         return result;

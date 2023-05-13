@@ -1,7 +1,7 @@
 package ru.practicum.shareit.booking.model.dto;
 
 import lombok.*;
-import ru.practicum.shareit.booking.validator.StartBeforeEndDateValid;
+import ru.practicum.shareit.util.validator.start.StartBeforeEndDateValid;
 
 import javax.validation.constraints.FutureOrPresent;
 import javax.validation.constraints.NotNull;

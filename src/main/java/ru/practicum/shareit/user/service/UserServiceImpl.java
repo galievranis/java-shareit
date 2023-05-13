@@ -28,8 +28,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserDto update(Long id, UserDto userDto) {
-        User userToUpdate = userRepository.findById(id).orElseThrow(() ->
-                new NoSuchElementException(String.format("User with ID: %d not found", id)));
+        User userToUpdate = getUserById(id);
 
         if (userDto.getEmail() != null && !userDto.getEmail().isBlank()) {
             userToUpdate.setEmail(userDto.getEmail());
@@ -50,8 +49,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto getById(Long id) {
-        User user = userRepository.findById(id).orElseThrow(() ->
-                new NoSuchElementException(String.format("User with ID: %d not found", id)));
+        User user = getUserById(id);
         return UserMapper.toUserDto(user);
     }
 
@@ -60,5 +58,10 @@ public class UserServiceImpl implements UserService {
     public void deleteById(Long id) {
         getById(id);
         userRepository.deleteById(id);
+    }
+
+    private User getUserById(Long id) {
+        return userRepository.findById(id).orElseThrow(() ->
+                new NoSuchElementException(String.format("User with ID: %d not found.", id)));
     }
 }
