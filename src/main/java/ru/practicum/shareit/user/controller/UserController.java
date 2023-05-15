@@ -6,8 +6,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.model.dto.UserDto;
 import ru.practicum.shareit.user.service.UserService;
-import ru.practicum.shareit.util.Create;
-import ru.practicum.shareit.util.Update;
+import ru.practicum.shareit.util.markers.Create;
+import ru.practicum.shareit.util.markers.Update;
 import java.util.List;
 
 @Slf4j

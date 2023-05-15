@@ -1,7 +1,9 @@
-package ru.practicum.shareit.booking.service;
+package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.model.dto.BookingDto;
@@ -13,11 +15,12 @@ import ru.practicum.shareit.exception.NotAvailableException;
 import ru.practicum.shareit.exception.PermissionDeniedException;
 import ru.practicum.shareit.item.model.entity.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
-import ru.practicum.shareit.user.mapper.UserMapper;
+import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.util.pagination.OffsetPageRequest;
 import ru.practicum.shareit.user.model.entity.User;
-import ru.practicum.shareit.user.service.UserService;
 import ru.practicum.shareit.booking.enums.BookingState;
 import ru.practicum.shareit.booking.enums.BookingStatus;
+import ru.practicum.shareit.util.validator.pagination.PaginationValidator;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -28,16 +31,15 @@ import java.util.*;
 @Transactional(readOnly = true)
 public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
-    private final UserService userService;
+    private final UserRepository userRepository;
     private final ItemRepository itemRepository;
 
     @Override
     @Transactional
     public BookingResponseDto create(Long userId, BookingDto bookingDto) {
-        User booker = UserMapper.toUser(userService.getById(userId));
+        User booker = getUserById(userId);
         Long itemId = bookingDto.getItemId();
-        Item item = itemRepository.findById(itemId).orElseThrow(() ->
-                new NoSuchElementException(String.format("Item with ID: %d not found.", itemId)));
+        Item item = getItemById(itemId);
 
         validateBookingWhenCreate(item, userId);
 
@@ -48,12 +50,10 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional
     public BookingResponseDto updateStatus(Long userId, Long bookingId, Boolean approved) {
-        userService.getById(userId);
+        getUserById(userId);
         Booking booking = bookingRepository.findById(bookingId).orElseThrow(() ->
                 new NoSuchElementException(String.format("Booking with ID: %d not found.", bookingId)));
-        Long itemId = booking.getItem().getId();
-        Item item = itemRepository.findById(itemId).orElseThrow(() ->
-                new NoSuchElementException(String.format("Item with ID: %d not found.", itemId)));
+        Item item = getItemById(booking.getItem().getId());
 
         validateBookingWhenUpdate(booking, item, userId);
 
@@ -63,7 +63,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingResponseDto getById(Long userId, Long bookingId) {
-        userService.getById(userId);
+        getUserById(userId);
         Booking booking = bookingRepository.findById(bookingId).orElseThrow(() ->
                 new NoSuchElementException(String.format("Booking with ID: %d not found", bookingId)));
 
@@ -75,49 +75,61 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingResponseDto> getByBookerId(Long userId, String state) {
-        userService.getById(userId);
+    public List<BookingResponseDto> getByBookerId(Long userId, String state, Integer from, Integer size) {
+        getUserById(userId);
         BookingState bookingState = checkState(state);
-
+        PaginationValidator.validate(from, size);
+        Pageable pageable = PageRequest.of(from / size, size);
         final LocalDateTime now = LocalDateTime.now();
 
         switch (bookingState) {
             case PAST:
-                return BookingMapper.toBookingResponseDto(bookingRepository.findAllByBookerIdAndEndBeforeOrderByStartDesc(userId, now));
+                return BookingMapper.toBookingResponseDto(bookingRepository.findAllByBookerIdAndEndBeforeOrderByStartDesc(userId, now, pageable));
             case FUTURE:
-                return BookingMapper.toBookingResponseDto(bookingRepository.findAllByBookerIdAndStartAfterOrderByStartDesc(userId, now));
+                return BookingMapper.toBookingResponseDto(bookingRepository.findAllByBookerIdAndStartAfterOrderByStartDesc(userId, now, pageable));
             case CURRENT:
-                return BookingMapper.toBookingResponseDto(bookingRepository.findAllByBookerIdAndStartBeforeAndEndAfterOrderByStartDesc(userId, now, now));
+                return BookingMapper.toBookingResponseDto(bookingRepository.findAllByBookerIdAndStartBeforeAndEndAfterOrderByStartDesc(userId, now, now, pageable));
             case WAITING:
-                return BookingMapper.toBookingResponseDto(bookingRepository.findAllByBookerIdAndStatusOrderByStartDesc(userId, BookingStatus.WAITING));
+                return BookingMapper.toBookingResponseDto(bookingRepository.findAllByBookerIdAndStatusOrderByStartDesc(userId, BookingStatus.WAITING, pageable));
             case REJECTED:
-                return BookingMapper.toBookingResponseDto(bookingRepository.findAllByBookerIdAndStatusOrderByStartDesc(userId, BookingStatus.REJECTED));
+                return BookingMapper.toBookingResponseDto(bookingRepository.findAllByBookerIdAndStatusOrderByStartDesc(userId, BookingStatus.REJECTED, pageable));
             default:
-                return BookingMapper.toBookingResponseDto(bookingRepository.findAllByBookerIdOrderByStartDesc(userId));
+                return BookingMapper.toBookingResponseDto(bookingRepository.findAllByBookerIdOrderByStartDesc(userId, pageable));
         }
     }
 
     @Override
-    public List<BookingResponseDto> getByOwnerId(Long userId, String state) {
-        userService.getById(userId);
+    public List<BookingResponseDto> getByOwnerId(Long userId, String state, Integer from, Integer size) {
+        getUserById(userId);
         BookingState bookingState = checkState(state);
-
+        PaginationValidator.validate(from, size);
+        Pageable pageable = OffsetPageRequest.of(from, size);
         final LocalDateTime now = LocalDateTime.now();
 
         switch (bookingState) {
             case PAST:
-                return BookingMapper.toBookingResponseDto(bookingRepository.findAllByItemOwnerIdAndEndBeforeOrderByStartDesc(userId, now));
+                return BookingMapper.toBookingResponseDto(bookingRepository.findAllByItemOwnerIdAndEndBeforeOrderByStartDesc(userId, now, pageable));
             case FUTURE:
-                return BookingMapper.toBookingResponseDto(bookingRepository.findAllByItemOwnerIdAndStartAfterOrderByStartDesc(userId, now));
+                return BookingMapper.toBookingResponseDto(bookingRepository.findAllByItemOwnerIdAndStartAfterOrderByStartDesc(userId, now, pageable));
             case CURRENT:
-                return BookingMapper.toBookingResponseDto(bookingRepository.findAllByItemOwnerIdAndStartBeforeAndEndAfterOrderByStartDesc(userId, now, now));
+                return BookingMapper.toBookingResponseDto(bookingRepository.findAllByItemOwnerIdAndStartBeforeAndEndAfterOrderByStartDesc(userId, now, now, pageable));
             case WAITING:
-                return BookingMapper.toBookingResponseDto(bookingRepository.findAllByItemOwnerIdAndStatusOrderByStartDesc(userId, BookingStatus.WAITING));
+                return BookingMapper.toBookingResponseDto(bookingRepository.findAllByItemOwnerIdAndStatusOrderByStartDesc(userId, BookingStatus.WAITING, pageable));
             case REJECTED:
-                return BookingMapper.toBookingResponseDto(bookingRepository.findAllByItemOwnerIdAndStatusOrderByStartDesc(userId, BookingStatus.REJECTED));
+                return BookingMapper.toBookingResponseDto(bookingRepository.findAllByItemOwnerIdAndStatusOrderByStartDesc(userId, BookingStatus.REJECTED, pageable));
             default:
-                return BookingMapper.toBookingResponseDto(bookingRepository.findAllByItemOwnerIdOrderByStartDesc(userId));
+                return BookingMapper.toBookingResponseDto(bookingRepository.findAllByItemOwnerIdOrderByStartDesc(userId, pageable));
         }
+    }
+
+    private User getUserById(Long id) {
+        return userRepository.findById(id).orElseThrow(() ->
+                new NoSuchElementException(String.format("User with ID: %d not found.", id)));
+    }
+
+    private Item getItemById(Long id) {
+        return itemRepository.findById(id).orElseThrow(() ->
+                new NoSuchElementException(String.format("Item with ID: %d not found.", id)));
     }
 
     private BookingState checkState(String state) {

@@ -3,6 +3,7 @@ package ru.practicum.shareit.item.model.entity;
 import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import ru.practicum.shareit.request.model.entity.ItemRequest;
 import ru.practicum.shareit.user.model.entity.User;
 
 import javax.persistence.*;
@@ -32,4 +33,9 @@ public class Item {
     @JoinColumn(name = "owner_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private User owner;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "request_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private ItemRequest request;
 }

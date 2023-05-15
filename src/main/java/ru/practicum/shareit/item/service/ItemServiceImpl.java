@@ -3,6 +3,7 @@ package ru.practicum.shareit.item.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,10 +22,13 @@ import ru.practicum.shareit.item.model.entity.Comment;
 import ru.practicum.shareit.item.model.entity.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
-import ru.practicum.shareit.user.mapper.UserMapper;
+import ru.practicum.shareit.request.model.entity.ItemRequest;
+import ru.practicum.shareit.request.repository.ItemRequestRepository;
+import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.util.pagination.OffsetPageRequest;
 import ru.practicum.shareit.user.model.entity.User;
-import ru.practicum.shareit.user.service.UserService;
 import ru.practicum.shareit.booking.enums.BookingStatus;
+import ru.practicum.shareit.util.validator.pagination.PaginationValidator;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -36,23 +40,32 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ItemServiceImpl implements ItemService {
+    private final UserRepository userRepository;
     private final ItemRepository itemRepository;
     private final CommentRepository commentRepository;
-    private final UserService userService;
     private final BookingRepository bookingRepository;
+    private final ItemRequestRepository itemRequestRepository;
 
     @Override
     @Transactional
     public ItemResponseDto create(Long userId, ItemDto itemDto) {
-        User owner = UserMapper.toUser(userService.getById(userId));
+        User owner = getUserById(userId);
         Item item = ItemMapper.toItem(itemDto, owner);
+
+        if (itemDto.getRequestId() != null) {
+            Long requestId = itemDto.getRequestId();
+            ItemRequest itemRequest = itemRequestRepository.findById(requestId).orElseThrow(() ->
+                    new NoSuchElementException(String.format("Request with ID: %d not found.", requestId)));
+            item.setRequest(itemRequest);
+        }
+
         return ItemMapper.toItemResponseDto(itemRepository.save(item));
     }
 
     @Override
     @Transactional
     public ItemResponseDto update(Long userId, ItemDto itemDto, Long itemId) {
-        userService.getById(userId);
+        getUserById(userId);
         Item itemToUpdate = itemRepository.findById(itemId).orElseThrow(() ->
                 new NoSuchElementException(
                     String.format("Item with ID: %d not found.", itemId)));
@@ -77,9 +90,11 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemResponseDto> getAll(Long userId) {
-        userService.getById(userId);
-        List<Item> itemList = itemRepository.findItemsByOwnerIdOrderByIdAsc(userId);
+    public List<ItemResponseDto> getAll(Long userId, Integer from, Integer size) {
+        getUserById(userId);
+        PaginationValidator.validate(from, size);
+        Pageable pageable = OffsetPageRequest.of(from, size);
+        List<Item> itemList = itemRepository.findItemsByOwnerIdOrderByIdAsc(userId, pageable);
 
         List<Long> itemIds = itemList.stream()
                 .map(Item::getId)
@@ -126,7 +141,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemResponseDto getById(Long userId, Long itemId) {
-        userService.getById(userId);
+        getUserById(userId);
         Item item = itemRepository.findById(itemId).orElseThrow(() ->
                 new NoSuchElementException(String.format("Item with ID: %d not found.", itemId)));
         ItemResponseDto itemResponseDto = ItemMapper.toItemResponseDto(item);
@@ -143,18 +158,20 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemResponseDto> searchItem(Long userId, String searchCriteria) {
-        userService.getById(userId);
-        List<Item> items = itemRepository.search(searchCriteria);
+    public List<ItemResponseDto> searchItem(Long userId, String searchCriteria, Integer from, Integer size) {
+        getUserById(userId);
+        PaginationValidator.validate(from, size);
+        Pageable pageable = OffsetPageRequest.of(from, size);
+        List<Item> items = itemRepository.search(searchCriteria, pageable);
         return ItemMapper.toItemResponseDto(items);
     }
 
     @Override
     @Transactional
     public CommentResponseDto addComment(Long userId, Long itemId, CommentDto commentDto) {
+        User user = getUserById(userId);
         Item item = itemRepository.findById(itemId).orElseThrow(() ->
                 new NoSuchElementException(String.format("Item with ID: %d not found.", itemId)));
-        User user = UserMapper.toUser(userService.getById(userId));
         Boolean isExists = bookingRepository.existsByBookerIdAndItemIdAndStatusAndEndBefore(
                 userId, itemId, BookingStatus.APPROVED, LocalDateTime.now());
 
@@ -190,5 +207,10 @@ public class ItemServiceImpl implements ItemService {
 
     private List<CommentResponseDto> getCommentsByItemId(Long itemId) {
         return CommentMapper.toCommentResponseDto(commentRepository.findAllByItemId(itemId));
+    }
+
+    private User getUserById(Long id) {
+        return userRepository.findById(id).orElseThrow(() ->
+                new NoSuchElementException(String.format("User with ID: %d not found.", id)));
     }
 }
