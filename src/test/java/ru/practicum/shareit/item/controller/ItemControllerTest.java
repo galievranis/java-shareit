@@ -46,6 +46,7 @@ public class ItemControllerTest {
     @Test
     @DisplayName("'create' should create item successfully'")
     public void createItem_Success() throws Exception {
+        // given
         User user = createUser1();
         ItemRequest itemRequest = createItemRequest1(user);
         Item item = createItem1(user, itemRequest);
@@ -54,12 +55,14 @@ public class ItemControllerTest {
         when(itemService.create(anyLong(), any(ItemDto.class)))
                 .thenReturn(itemResponseDto);
 
+        // when
         mvc.perform(post("/items")
                         .header(OWNER_ID_HEADER, user.getId())
                         .content(objectMapper.writeValueAsString(itemResponseDto))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
+                // then
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(itemResponseDto.getId()), Long.class))
                 .andExpect(jsonPath("$.name", is(itemResponseDto.getName())))
@@ -74,6 +77,7 @@ public class ItemControllerTest {
     @Test
     @DisplayName("'update' should update item successfully'")
     public void updateItem_Success() throws Exception {
+        // given
         User user = createUser1();
         ItemRequest itemRequest = createItemRequest1(user);
         Item item = createItem1(user, itemRequest);
@@ -82,12 +86,14 @@ public class ItemControllerTest {
         when(itemService.update(anyLong(), any(ItemDto.class), anyLong()))
                 .thenReturn(itemResponseDto);
 
+        // when
         mvc.perform(patch("/items/{itemId}", itemResponseDto.getId())
                         .header(OWNER_ID_HEADER, user.getId())
                         .content(objectMapper.writeValueAsString(itemResponseDto))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
+                // then
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(itemResponseDto.getId()), Long.class))
                 .andExpect(jsonPath("$.name", is(itemResponseDto.getName())))
@@ -102,6 +108,7 @@ public class ItemControllerTest {
     @Test
     @DisplayName("'getAll' should return all items successfully")
     public void getAllItemsByUserId_Success() throws Exception {
+        // given
         User user1 = createUser1();
         ItemRequest itemRequest = createItemRequest1(user1);
         Item item1 = createItem1(user1, itemRequest);
@@ -111,12 +118,14 @@ public class ItemControllerTest {
         when(itemService.getAll(anyLong(), anyInt(), anyInt()))
                 .thenReturn(items);
 
+        // when
         mvc.perform(get("/items")
                         .header(OWNER_ID_HEADER, user1.getId())
                         .content(objectMapper.writeValueAsString(items))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
+                // then
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id", is(itemResponseDto1.getId()), Long.class))
                 .andExpect(jsonPath("$[0].name", is(itemResponseDto1.getName())))
@@ -131,6 +140,7 @@ public class ItemControllerTest {
     @Test
     @DisplayName("'getById' should return item by id successfully")
     public void getItemById_Success() throws Exception {
+        // given
         User user = createUser1();
         ItemRequest itemRequest = createItemRequest1(user);
         Item item1 = createItem1(user, itemRequest);
@@ -139,12 +149,14 @@ public class ItemControllerTest {
         when(itemService.getById(anyLong(), anyLong()))
                 .thenReturn(itemResponseDto1);
 
+        // when
         mvc.perform(get("/items/{itemId}", item1.getId())
                         .header(OWNER_ID_HEADER, user.getId())
                         .content(objectMapper.writeValueAsString(itemResponseDto1))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
+                // then
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(itemResponseDto1.getId()), Long.class))
                 .andExpect(jsonPath("$.name", is(itemResponseDto1.getName())))
@@ -159,6 +171,7 @@ public class ItemControllerTest {
     @Test
     @DisplayName("'search' should return all items by search criteria successfully")
     public void getALlItemsBySearchCriteria_Success() throws Exception {
+        // given
         User user = createUser1();
         ItemRequest itemRequest = createItemRequest1(user);
         Item item1 = createItem1(user, itemRequest);
@@ -167,6 +180,7 @@ public class ItemControllerTest {
         when(itemService.searchItem(anyLong(), anyString(), anyInt(), anyInt()))
                 .thenReturn(List.of(itemResponseDto1));
 
+        // when
         mvc.perform(get("/items/search")
                         .header(OWNER_ID_HEADER, user.getId())
                         .param("text", "Item")
@@ -174,6 +188,7 @@ public class ItemControllerTest {
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
+                // then
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id", is(itemResponseDto1.getId()), Long.class))
                 .andExpect(jsonPath("$[0].name", is(itemResponseDto1.getName())))
@@ -188,11 +203,13 @@ public class ItemControllerTest {
     @Test
     @DisplayName("'search' should return empty list when search criteria is empty")
     public void getALlItemsBySearchCriteria_SearchCriteriaIsEmpty() throws Exception {
+        // given
         User user = createUser1();
 
         when(itemService.searchItem(anyLong(), anyString(), anyInt(), anyInt()))
                 .thenReturn(List.of());
 
+        // when
         mvc.perform(get("/items/search")
                         .header(OWNER_ID_HEADER, user.getId())
                         .param("text", " ")
@@ -200,6 +217,7 @@ public class ItemControllerTest {
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
+                // then
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", is(empty())));
     }
@@ -207,6 +225,7 @@ public class ItemControllerTest {
     @Test
     @DisplayName("'addComment' should create comment successfully")
     public void createComment_Success() throws Exception {
+        // given
         User user = createUser1();
         ItemRequest itemRequest = createItemRequest1(user);
         Item item = createItem1(user, itemRequest);
@@ -216,12 +235,14 @@ public class ItemControllerTest {
         when(itemService.addComment(anyLong(), anyLong(), any(CommentDto.class)))
                 .thenReturn(commentResponseDto);
 
+        // when
         mvc.perform(post("/items/{itemId}/comment", item.getId())
                         .header(OWNER_ID_HEADER, user.getId())
                         .content(objectMapper.writeValueAsString(commentResponseDto))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
+                // then
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(commentResponseDto.getId()), Long.class))
                 .andExpect(jsonPath("$.text", is(commentResponseDto.getText())))

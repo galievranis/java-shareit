@@ -52,6 +52,7 @@ public class BookingServiceImplTest {
     @Test
     @DisplayName("'create' should create booking successfully")
     public void createBooking_Success() {
+        // given
         User booker = createUser1();
         User user = createUser2();
         ItemRequest itemRequest = createItemRequest(user);
@@ -59,7 +60,6 @@ public class BookingServiceImplTest {
         Booking booking = createBooking1(user, item);
         BookingDto bookingDto = createBookingDto(booking);
         BookingResponseDto expectedBooking = BookingMapper.toBookingResponseDto(booking);
-
         when(userRepository.findById(anyLong()))
                 .thenReturn(Optional.of(user));
         when(itemRepository.findById(anyLong()))
@@ -67,8 +67,10 @@ public class BookingServiceImplTest {
         when(bookingRepository.save(any(Booking.class)))
                 .thenReturn(booking);
 
+        // when
         BookingResponseDto actualBooking = bookingService.create(booker.getId(), bookingDto);
 
+        // then
         assertNotNull(actualBooking);
         assertThat(actualBooking.getId(), equalTo(expectedBooking.getId()));
         assertThat(actualBooking.getStart(), equalTo(expectedBooking.getStart()));
@@ -81,19 +83,21 @@ public class BookingServiceImplTest {
     @Test
     @DisplayName("'create' should throw exception when user not found")
     public void createBooking_UserNotFound() {
+        // given
         User user = createUser1();
         ItemRequest itemRequest = createItemRequest(user);
         Item item = createItem(user, itemRequest);
         Booking booking = createBooking1(user, item);
         BookingDto bookingDto = createBookingDto(booking);
         Long id = 2L;
-
         when(userRepository.findById(id))
                 .thenReturn(Optional.empty());
 
+        // when
         NoSuchElementException exception = assertThrows(NoSuchElementException.class, () ->
                 bookingService.create(id, bookingDto));
 
+        // then
         assertEquals(String.format("User with ID: %d not found.", id), exception.getMessage());
         verify(userRepository, times(1)).findById(id);
     }
@@ -101,21 +105,23 @@ public class BookingServiceImplTest {
     @Test
     @DisplayName("'create' should throw exception when item not found")
     public void createBooking_ItemNotFound() {
+        // given
         User user = createUser1();
         ItemRequest itemRequest = createItemRequest(user);
         Item item = createItem(user, itemRequest);
         Booking booking = createBooking1(user, item);
         BookingDto bookingDto = createBookingDto(booking);
         Long id = 1L;
-
         when(userRepository.findById(user.getId()))
                 .thenReturn(Optional.of(user));
         when(itemRepository.findById(id))
                 .thenReturn(Optional.empty());
 
+        // when
         NoSuchElementException exception = assertThrows(NoSuchElementException.class, () ->
                 bookingService.create(user.getId(), bookingDto));
 
+        // then
         assertEquals(String.format("Item with ID: %d not found.", id), exception.getMessage());
         verify(itemRepository, times(1)).findById(id);
     }
@@ -123,20 +129,22 @@ public class BookingServiceImplTest {
     @Test
     @DisplayName("'create' should throw exception when owner try to book his own item")
     public void createBooking_OwnerCanNotBookHisOwnItem() {
+        // given
         User user = createUser1();
         ItemRequest itemRequest = createItemRequest(user);
         Item item = createItem(user, itemRequest);
         Booking booking = createBooking1(user, item);
         BookingDto bookingDto = createBookingDto(booking);
-
         when(userRepository.findById(anyLong()))
                 .thenReturn(Optional.of(user));
         when(itemRepository.findById(anyLong()))
                 .thenReturn(Optional.of(item));
 
+        // when
         PermissionDeniedException exception = assertThrows(PermissionDeniedException.class, () ->
                 bookingService.create(user.getId(), bookingDto));
 
+        // then
         assertEquals("You can't book your own item.", exception.getMessage());
         verify(userRepository, times(1)).findById(user.getId());
         verify(itemRepository, times(1)).findById(item.getId());
@@ -145,6 +153,7 @@ public class BookingServiceImplTest {
     @Test
     @DisplayName("'create' should throw exception when item not available for booking")
     public void createBooking_ItemNotAvailable() {
+        // given
         User booker = createUser1();
         User user = createUser2();
         ItemRequest itemRequest = createItemRequest(user);
@@ -152,15 +161,16 @@ public class BookingServiceImplTest {
         item.setAvailable(false);
         Booking booking = createBooking1(user, item);
         BookingDto bookingDto = createBookingDto(booking);
-
         when(userRepository.findById(anyLong()))
                 .thenReturn(Optional.of(booker));
         when(itemRepository.findById(anyLong()))
                 .thenReturn(Optional.of(item));
 
+        // when
         NotAvailableException exception = assertThrows(NotAvailableException.class, () ->
                 bookingService.create(booker.getId(), bookingDto));
 
+        // then
         assertEquals(String.format("Item with ID: %d not available for booking.", item.getId()), exception.getMessage());
         verify(userRepository, times(1)).findById(booker.getId());
         verify(itemRepository, times(1)).findById(item.getId());
@@ -169,11 +179,11 @@ public class BookingServiceImplTest {
     @Test
     @DisplayName("'update' should update booking status to 'APPROVED")
     public void updateBookingStatusToApprove_Success() {
+        // given
         User user = createUser1();
         ItemRequest itemRequest = createItemRequest(user);
         Item item = createItem(user, itemRequest);
         Booking booking = createBooking1(user, item);
-
         when(userRepository.findById(anyLong()))
                 .thenReturn(Optional.of(user));
         when(itemRepository.findById(anyLong()))
@@ -181,8 +191,10 @@ public class BookingServiceImplTest {
         when(bookingRepository.findById(anyLong()))
                 .thenReturn(Optional.of(booking));
 
+        // when
         BookingResponseDto actualBooking = bookingService.updateStatus(user.getId(), booking.getId(), true);
 
+        // then
         assertNotNull(actualBooking);
         assertThat(actualBooking.getStatus(), equalTo(BookingStatus.APPROVED));
         verify(userRepository, times(1)).findById(user.getId());
@@ -192,11 +204,11 @@ public class BookingServiceImplTest {
     @Test
     @DisplayName("'update' should update booking status to 'REJECTED")
     public void updateBookingStatusToRejected_Success() {
+        // given
         User user = createUser1();
         ItemRequest itemRequest = createItemRequest(user);
         Item item = createItem(user, itemRequest);
         Booking booking = createBooking1(user, item);
-
         when(userRepository.findById(anyLong()))
                 .thenReturn(Optional.of(user));
         when(itemRepository.findById(anyLong()))
@@ -204,8 +216,10 @@ public class BookingServiceImplTest {
         when(bookingRepository.findById(anyLong()))
                 .thenReturn(Optional.of(booking));
 
+        // when
         BookingResponseDto actualBooking = bookingService.updateStatus(user.getId(), booking.getId(), false);
 
+        // then
         assertNotNull(actualBooking);
         assertThat(actualBooking.getStatus(), equalTo(BookingStatus.REJECTED));
         verify(userRepository, times(1)).findById(user.getId());
@@ -215,18 +229,20 @@ public class BookingServiceImplTest {
     @Test
     @DisplayName("'update' should throw exception when user not found")
     public void updateBookingStatus_UserNotFound() {
+        // given
         User user = createUser1();
         ItemRequest itemRequest = createItemRequest(user);
         Item item = createItem(user, itemRequest);
         Booking booking = createBooking1(user, item);
         Long id = 2L;
-
         when(userRepository.findById(id))
                 .thenReturn(Optional.empty());
 
+        // when
         NoSuchElementException exception = assertThrows(NoSuchElementException.class, () ->
                 bookingService.updateStatus(id, booking.getId(), true));
 
+        // then
         assertEquals(String.format("User with ID: %d not found.", id), exception.getMessage());
         verify(userRepository, times(1)).findById(id);
     }
@@ -234,17 +250,19 @@ public class BookingServiceImplTest {
     @Test
     @DisplayName("'update' should throw exception when booking not found")
     public void updateBookingStatus_BookingNotFound() {
+        // given
         User user = createUser1();
         Long id = 1L;
-
         when(userRepository.findById(user.getId()))
                 .thenReturn(Optional.of(user));
         when(bookingRepository.findById(id))
                 .thenReturn(Optional.empty());
 
+        // when
         NoSuchElementException exception = assertThrows(NoSuchElementException.class, () ->
                 bookingService.updateStatus(user.getId(), id, true));
 
+        // then
         assertEquals(String.format("Booking with ID: %d not found.", id), exception.getMessage());
         verify(userRepository, times(1)).findById(user.getId());
         verify(bookingRepository, times(1)).findById(id);
@@ -253,12 +271,12 @@ public class BookingServiceImplTest {
     @Test
     @DisplayName("'update' should throw exception when item not found")
     public void updateBookingStatus_ItemNotFound() {
+
         User user = createUser1();
         ItemRequest itemRequest = createItemRequest(user);
         Item item = createItem(user, itemRequest);
         Booking booking = createBooking1(user, item);
         Long id = 1L;
-
         when(userRepository.findById(user.getId()))
                 .thenReturn(Optional.of(user));
         when(bookingRepository.findById(anyLong()))
@@ -266,9 +284,11 @@ public class BookingServiceImplTest {
         when(itemRepository.findById(id))
                 .thenReturn(Optional.empty());
 
+        // when
         NoSuchElementException exception = assertThrows(NoSuchElementException.class, () ->
                 bookingService.updateStatus(user.getId(), booking.getId(), true));
 
+        // then
         assertEquals(String.format("Item with ID: %d not found.", id), exception.getMessage());
         verify(itemRepository, times(1)).findById(user.getId());
         verify(bookingRepository, times(1)).findById(booking.getId());
@@ -278,12 +298,12 @@ public class BookingServiceImplTest {
     @Test
     @DisplayName("'update' should throw exception when user not owner of the booking")
     public void updateBookingStatus_UserNotOwner() {
+        // given
         User owner = createUser1();
         User notOwner = createUser2();
         ItemRequest itemRequest = createItemRequest(owner);
         Item item = createItem(owner, itemRequest);
         Booking booking = createBooking1(owner, item);
-
         when(userRepository.findById(notOwner.getId()))
                 .thenReturn(Optional.of(notOwner));
         when(bookingRepository.findById(anyLong()))
@@ -291,21 +311,23 @@ public class BookingServiceImplTest {
         when(itemRepository.findById(anyLong()))
                 .thenReturn(Optional.of(item));
 
+        // when
         PermissionDeniedException exception = assertThrows(PermissionDeniedException.class, () ->
                 bookingService.updateStatus(notOwner.getId(), booking.getId(), true));
 
+        // then
         assertEquals("Only the owner can change the booking status.", exception.getMessage());
     }
 
     @Test
     @DisplayName("'update' should throw exception when booking status isn't 'WAITING'")
     public void updateBookingStatus_StatusIsNotWaiting() {
+        // given
         User user = createUser1();
         ItemRequest itemRequest = createItemRequest(user);
         Item item = createItem(user, itemRequest);
         Booking booking = createBooking1(user, item);
         booking.setStatus(BookingStatus.APPROVED);
-
         when(userRepository.findById(anyLong()))
                 .thenReturn(Optional.of(user));
         when(itemRepository.findById(anyLong()))
@@ -313,9 +335,11 @@ public class BookingServiceImplTest {
         when(bookingRepository.findById(anyLong()))
                 .thenReturn(Optional.of(booking));
 
+        // when
         NotAvailableException exception = assertThrows(NotAvailableException.class, () ->
                 bookingService.updateStatus(user.getId(), booking.getId(), true));
 
+        // then
         assertEquals(String.format("You can accept or reject a booking only " +
                 "if the booking status is 'Waiting'. Current booking status is: %s.",
                 booking.getStatus()), exception.getMessage());
@@ -324,19 +348,21 @@ public class BookingServiceImplTest {
     @Test
     @DisplayName("'getById' should return booking by booking ID successfully")
     public void getBookingByBookingId_Success() {
+        // given
         User user = createUser1();
         ItemRequest itemRequest = createItemRequest(user);
         Item item = createItem(user, itemRequest);
         Booking booking = createBooking1(user, item);
         BookingResponseDto expectedBooking = BookingMapper.toBookingResponseDto(booking);
-
         when(userRepository.findById(anyLong()))
                 .thenReturn(Optional.of(user));
         when(bookingRepository.findById(anyLong()))
                 .thenReturn(Optional.of(booking));
 
+        // when
         BookingResponseDto actualBooking = bookingService.getById(user.getId(), 1L);
 
+        // then
         assertNotNull(actualBooking);
         assertThat(actualBooking.getId(), equalTo(expectedBooking.getId()));
         assertThat(actualBooking.getItem().getId(), equalTo(expectedBooking.getItem().getId()));
@@ -349,18 +375,20 @@ public class BookingServiceImplTest {
     @Test
     @DisplayName("'getById' should throw exception when user not found")
     public void getBookingByBookingId_UserNotFound() {
+        // given
         User user = createUser1();
         ItemRequest itemRequest = createItemRequest(user);
         Item item = createItem(user, itemRequest);
         Booking booking = createBooking1(user, item);
         Long id = 2L;
-
         when(userRepository.findById(id))
                 .thenReturn(Optional.empty());
 
+        // when
         NoSuchElementException exception = assertThrows(NoSuchElementException.class, () ->
                 bookingService.getById(id, booking.getId()));
 
+        // then
         assertEquals(String.format("User with ID: %d not found.", id), exception.getMessage());
         verify(userRepository, times(1)).findById(id);
     }
@@ -368,27 +396,29 @@ public class BookingServiceImplTest {
     @Test
     @DisplayName("'getById' should throw exception when user isn't owner or booker")
     public void getBookingByBookingId_UserNotOwnerOrBooker() {
+        // given
         User user = createUser1();
         User notOwner = createUser2();
         ItemRequest itemRequest = createItemRequest(user);
         Item item = createItem(user, itemRequest);
         Booking booking = createBooking1(user, item);
-
         when(userRepository.findById(anyLong()))
                 .thenReturn(Optional.of(notOwner));
         when(bookingRepository.findById(anyLong()))
                 .thenReturn(Optional.of(booking));
 
-
+        // when
         PermissionDeniedException exception = assertThrows(PermissionDeniedException.class, () ->
                 bookingService.getById(notOwner.getId(), booking.getId()));
 
+        // then
         assertEquals("Only the owner or the booker of the item can view the booking.", exception.getMessage());
     }
 
     @Test
     @DisplayName("'getByBookerId' should return all 'PAST' bookings by booker ID")
     public void getPastBookingsByBookerId_Success() {
+        // given
         User user = createUser1();
         User booker = createUser2();
         ItemRequest itemRequest = createItemRequest(user);
@@ -396,14 +426,15 @@ public class BookingServiceImplTest {
         Booking booking = createBooking1(booker, item);
         List<Booking> pastBookings = List.of(booking);
         List<BookingResponseDto> expectedBookings = BookingMapper.toBookingResponseDto(pastBookings);
-
         when(userRepository.findById(anyLong()))
                 .thenReturn(Optional.of(booker));
         when(bookingRepository.findAllByBookerIdAndEndBeforeOrderByStartDesc(anyLong(), any(LocalDateTime.class), any(Pageable.class)))
                 .thenReturn(pastBookings);
 
+        // when
         List<BookingResponseDto> actualBookings = bookingService.getByBookerId(booker.getId(), "PAST", 0, 10);
 
+        // then
         assertNotNull(actualBookings);
         assertThat(actualBookings.get(0).getId(), equalTo(expectedBookings.get(0).getId()));
         assertThat(actualBookings.get(0).getItem().getId(), equalTo(expectedBookings.get(0).getItem().getId()));
@@ -416,6 +447,7 @@ public class BookingServiceImplTest {
     @Test
     @DisplayName("'getByBookerId' should return all 'FUTURE' bookings by booker ID")
     public void getFutureBookingsByBookerId_Success() {
+        // given
         User user = createUser1();
         User booker = createUser2();
         ItemRequest itemRequest = createItemRequest(user);
@@ -423,15 +455,16 @@ public class BookingServiceImplTest {
         Booking booking = createBooking1(booker, item);
         List<Booking> futureBookings = List.of(booking);
         List<BookingResponseDto> expectedBookings = BookingMapper.toBookingResponseDto(futureBookings);
-
         when(userRepository.findById(anyLong()))
                 .thenReturn(Optional.of(booker));
         when(bookingRepository.findAllByBookerIdAndStartAfterOrderByStartDesc(
                 anyLong(), any(LocalDateTime.class), any(Pageable.class)))
                 .thenReturn(futureBookings);
 
+        // when
         List<BookingResponseDto> actualBookings = bookingService.getByBookerId(booker.getId(), "FUTURE", 0, 10);
 
+        // then
         assertNotNull(actualBookings);
         assertThat(actualBookings.get(0).getId(), equalTo(expectedBookings.get(0).getId()));
         assertThat(actualBookings.get(0).getItem().getId(), equalTo(expectedBookings.get(0).getItem().getId()));
@@ -444,6 +477,7 @@ public class BookingServiceImplTest {
     @Test
     @DisplayName("'getByBookerId' should return all 'CURRENT' bookings by booker ID")
     public void getCurrentBookingsByBookerId_Success() {
+        // given
         User user = createUser1();
         User booker = createUser2();
         ItemRequest itemRequest = createItemRequest(user);
@@ -451,14 +485,15 @@ public class BookingServiceImplTest {
         Booking booking = createBooking1(booker, item);
         List<Booking> currentBookings = List.of(booking);
         List<BookingResponseDto> expectedBookings = BookingMapper.toBookingResponseDto(currentBookings);
-
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(booker));
         when(bookingRepository.findAllByBookerIdAndStartBeforeAndEndAfterOrderByStartDesc(
                 anyLong(), any(LocalDateTime.class), any(LocalDateTime.class), any(Pageable.class)))
                 .thenReturn(currentBookings);
 
+        // when
         List<BookingResponseDto> actualBookings = bookingService.getByBookerId(booker.getId(), "CURRENT", 0, 10);
 
+        // then
         assertNotNull(actualBookings);
         assertThat(actualBookings.get(0).getId(), equalTo(expectedBookings.get(0).getId()));
         assertThat(actualBookings.get(0).getItem().getId(), equalTo(expectedBookings.get(0).getItem().getId()));
@@ -471,6 +506,7 @@ public class BookingServiceImplTest {
     @Test
     @DisplayName("'getByBookerId' should return all 'WAITING' bookings by booker ID")
     public void getWaitingBookingsByBookerId_Success() {
+        // given
         User user = createUser1();
         User booker = createUser2();
         ItemRequest itemRequest = createItemRequest(user);
@@ -478,13 +514,14 @@ public class BookingServiceImplTest {
         Booking booking = createBooking1(booker, item);
         List<Booking> waitingBookings = List.of(booking);
         List<BookingResponseDto> expectedBookings = BookingMapper.toBookingResponseDto(waitingBookings);
-
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(booker));
         when(bookingRepository.findAllByBookerIdAndStatusOrderByStartDesc(anyLong(), any(BookingStatus.class), any(Pageable.class)))
                 .thenReturn(waitingBookings);
 
+        // when
         List<BookingResponseDto> actualBookings = bookingService.getByBookerId(booker.getId(), "WAITING", 0, 10);
 
+        // then
         assertNotNull(actualBookings);
         assertThat(actualBookings.get(0).getId(), equalTo(expectedBookings.get(0).getId()));
         assertThat(actualBookings.get(0).getItem().getId(), equalTo(expectedBookings.get(0).getItem().getId()));
@@ -497,6 +534,7 @@ public class BookingServiceImplTest {
     @Test
     @DisplayName("'getByBookerId' should return all 'REJECTED' bookings by booker ID")
     public void getRejectedBookingsByBookerId_Success() {
+        // given
         User user = createUser1();
         User booker = createUser2();
         ItemRequest itemRequest = createItemRequest(user);
@@ -504,13 +542,14 @@ public class BookingServiceImplTest {
         Booking booking = createBooking1(booker, item);
         List<Booking> rejectedBookings = List.of(booking);
         List<BookingResponseDto> expectedBookings = BookingMapper.toBookingResponseDto(rejectedBookings);
-
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(booker));
         when(bookingRepository.findAllByBookerIdAndStatusOrderByStartDesc(anyLong(), any(BookingStatus.class), any(Pageable.class)))
                 .thenReturn(rejectedBookings);
 
+        // when
         List<BookingResponseDto> actualBookings = bookingService.getByBookerId(booker.getId(), "REJECTED", 0, 10);
 
+        // then
         assertNotNull(actualBookings);
         assertThat(actualBookings.get(0).getId(), equalTo(expectedBookings.get(0).getId()));
         assertThat(actualBookings.get(0).getItem().getId(), equalTo(expectedBookings.get(0).getItem().getId()));
@@ -523,6 +562,7 @@ public class BookingServiceImplTest {
     @Test
     @DisplayName("'getByBookerId' should return all bookings by booker ID")
     public void getAllBookingsByBookerId_Success() {
+        // given
         User user = createUser1();
         User booker = createUser2();
         ItemRequest itemRequest = createItemRequest(user);
@@ -530,13 +570,14 @@ public class BookingServiceImplTest {
         Booking booking = createBooking1(booker, item);
         List<Booking> allBookings = List.of(booking);
         List<BookingResponseDto> expectedBookings = BookingMapper.toBookingResponseDto(allBookings);
-
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(booker));
         when(bookingRepository.findAllByBookerIdOrderByStartDesc(anyLong(), any(Pageable.class)))
                 .thenReturn(allBookings);
 
+        // when
         List<BookingResponseDto> actualBookings = bookingService.getByBookerId(booker.getId(), "ALL", 0, 10);
 
+        // then
         assertNotNull(actualBookings);
         assertThat(actualBookings.get(0).getId(), equalTo(expectedBookings.get(0).getId()));
         assertThat(actualBookings.get(0).getItem().getId(), equalTo(expectedBookings.get(0).getItem().getId()));
@@ -550,14 +591,16 @@ public class BookingServiceImplTest {
     @Test
     @DisplayName("'getByBookerId' should throw exception when user not found")
     public void getAllBookingsByBookerId_UserNotFound() {
+        // given
         Long id = 2L;
-
         when(userRepository.findById(id))
                 .thenReturn(Optional.empty());
 
+        // when
         NoSuchElementException exception = assertThrows(NoSuchElementException.class, () ->
                 bookingService.getByBookerId(id, "ALL", 0, 10));
 
+        // then
         assertEquals(String.format("User with ID: %d not found.", id), exception.getMessage());
         verify(userRepository, times(1)).findById(id);
     }
@@ -565,14 +608,16 @@ public class BookingServiceImplTest {
     @Test
     @DisplayName("'getByBookerId' should throw exception when state is invalid")
     public void getAllBookingsByBookerId_InvalidState() {
+        // given
         User booker = createUser1();
         String state = "Unknown State";
-
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(booker));
 
+        // when
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
                 bookingService.getByBookerId(booker.getId(), state, 0, 10));
 
+        // then
         assertEquals(String.format("Unknown state: %s", state), exception.getMessage());
         verify(userRepository, times(1)).findById(booker.getId());
     }
@@ -580,6 +625,7 @@ public class BookingServiceImplTest {
     @Test
     @DisplayName("'getByOwnerId' should return all 'PAST' bookings by owner ID")
     public void getPastBookingsByOwnerId_Success() {
+        // given
         User user = createUser1();
         User booker = createUser2();
         ItemRequest itemRequest = createItemRequest(user);
@@ -587,14 +633,15 @@ public class BookingServiceImplTest {
         Booking booking = createBooking1(booker, item);
         List<Booking> pastBookings = List.of(booking);
         List<BookingResponseDto> expectedBookings = BookingMapper.toBookingResponseDto(pastBookings);
-
         when(userRepository.findById(anyLong()))
                 .thenReturn(Optional.of(user));
         when(bookingRepository.findAllByItemOwnerIdAndEndBeforeOrderByStartDesc(anyLong(), any(LocalDateTime.class), any(Pageable.class)))
                 .thenReturn(pastBookings);
 
+        // when
         List<BookingResponseDto> actualBookings = bookingService.getByOwnerId(user.getId(), "PAST", 0, 10);
 
+        // then
         assertNotNull(actualBookings);
         assertThat(actualBookings.get(0).getId(), equalTo(expectedBookings.get(0).getId()));
         assertThat(actualBookings.get(0).getItem().getId(), equalTo(expectedBookings.get(0).getItem().getId()));
@@ -607,6 +654,7 @@ public class BookingServiceImplTest {
     @Test
     @DisplayName("'getByOwnerId' should return all 'FUTURE' bookings by owner ID")
     public void getFutureBookingsByOwnerId_Success() {
+        // given
         User user = createUser1();
         User booker = createUser2();
         ItemRequest itemRequest = createItemRequest(user);
@@ -614,14 +662,15 @@ public class BookingServiceImplTest {
         Booking booking = createBooking1(booker, item);
         List<Booking> futureBookings = List.of(booking);
         List<BookingResponseDto> expectedBookings = BookingMapper.toBookingResponseDto(futureBookings);
-
         when(userRepository.findById(anyLong()))
                 .thenReturn(Optional.of(user));
         when(bookingRepository.findAllByItemOwnerIdAndStartAfterOrderByStartDesc(anyLong(), any(LocalDateTime.class), any(Pageable.class)))
                 .thenReturn(futureBookings);
 
+        // when
         List<BookingResponseDto> actualBookings = bookingService.getByOwnerId(user.getId(), "FUTURE", 0, 10);
 
+        // then
         assertNotNull(actualBookings);
         assertThat(actualBookings.get(0).getId(), equalTo(expectedBookings.get(0).getId()));
         assertThat(actualBookings.get(0).getItem().getId(), equalTo(expectedBookings.get(0).getItem().getId()));
@@ -634,6 +683,7 @@ public class BookingServiceImplTest {
     @Test
     @DisplayName("'getByOwnerId' should return all 'CURRENT' bookings by owner ID")
     public void getCurrentBookingsByOwnerId_Success() {
+        // given
         User user = createUser1();
         User booker = createUser2();
         ItemRequest itemRequest = createItemRequest(user);
@@ -641,15 +691,16 @@ public class BookingServiceImplTest {
         Booking booking = createBooking1(booker, item);
         List<Booking> currentBookings = List.of(booking);
         List<BookingResponseDto> expectedBookings = BookingMapper.toBookingResponseDto(currentBookings);
-
         when(userRepository.findById(anyLong()))
                 .thenReturn(Optional.of(user));
         when(bookingRepository.findAllByItemOwnerIdAndStartBeforeAndEndAfterOrderByStartDesc(
                 anyLong(), any(LocalDateTime.class), any(LocalDateTime.class), any(Pageable.class)))
                 .thenReturn(currentBookings);
 
+        // when
         List<BookingResponseDto> actualBookings = bookingService.getByOwnerId(user.getId(), "CURRENT", 0, 10);
 
+        // then
         assertNotNull(actualBookings);
         assertThat(actualBookings.get(0).getId(), equalTo(expectedBookings.get(0).getId()));
         assertThat(actualBookings.get(0).getItem().getId(), equalTo(expectedBookings.get(0).getItem().getId()));
@@ -662,6 +713,7 @@ public class BookingServiceImplTest {
     @Test
     @DisplayName("'getByOwnerId' should return all 'WAITING' bookings by owner ID")
     public void getWaitingBookingsByOwnerId_Success() {
+        // given
         User user = createUser1();
         User booker = createUser2();
         ItemRequest itemRequest = createItemRequest(user);
@@ -669,14 +721,15 @@ public class BookingServiceImplTest {
         Booking booking = createBooking1(booker, item);
         List<Booking> waitingBookings = List.of(booking);
         List<BookingResponseDto> expectedBookings = BookingMapper.toBookingResponseDto(waitingBookings);
-
         when(userRepository.findById(anyLong()))
                 .thenReturn(Optional.of(user));
         when(bookingRepository.findAllByItemOwnerIdAndStatusOrderByStartDesc(anyLong(), any(BookingStatus.class), any(Pageable.class)))
                 .thenReturn(waitingBookings);
 
+        // when
         List<BookingResponseDto> actualBookings = bookingService.getByOwnerId(user.getId(), "WAITING", 0, 10);
 
+        // then
         assertNotNull(actualBookings);
         assertThat(actualBookings.get(0).getId(), equalTo(expectedBookings.get(0).getId()));
         assertThat(actualBookings.get(0).getItem().getId(), equalTo(expectedBookings.get(0).getItem().getId()));
@@ -689,6 +742,7 @@ public class BookingServiceImplTest {
     @Test
     @DisplayName("'getByOwnerId' should return all 'REJECTED' bookings by owner ID")
     public void getRejectedBookingsByOwnerId_Success() {
+        // given
         User user = createUser1();
         User booker = createUser2();
         ItemRequest itemRequest = createItemRequest(user);
@@ -696,14 +750,15 @@ public class BookingServiceImplTest {
         Booking booking = createBooking1(booker, item);
         List<Booking> rejectedBookings = List.of(booking);
         List<BookingResponseDto> expectedBookings = BookingMapper.toBookingResponseDto(rejectedBookings);
-
         when(userRepository.findById(anyLong()))
                 .thenReturn(Optional.of(user));
         when(bookingRepository.findAllByItemOwnerIdAndStatusOrderByStartDesc(anyLong(), any(BookingStatus.class), any(Pageable.class)))
                 .thenReturn(rejectedBookings);
 
+        // when
         List<BookingResponseDto> actualBookings = bookingService.getByOwnerId(user.getId(), "REJECTED", 0, 10);
 
+        // then
         assertNotNull(actualBookings);
         assertThat(actualBookings.get(0).getId(), equalTo(expectedBookings.get(0).getId()));
         assertThat(actualBookings.get(0).getItem().getId(), equalTo(expectedBookings.get(0).getItem().getId()));
@@ -716,6 +771,7 @@ public class BookingServiceImplTest {
     @Test
     @DisplayName("'getByOwnerId' should return all bookings by owner ID")
     public void getAllBookingsByOwnerId_Success() {
+        // given
         User user = createUser1();
         User booker = createUser2();
         ItemRequest itemRequest = createItemRequest(user);
@@ -723,14 +779,15 @@ public class BookingServiceImplTest {
         Booking booking = createBooking1(booker, item);
         List<Booking> allBookings = List.of(booking);
         List<BookingResponseDto> expectedBookings = BookingMapper.toBookingResponseDto(allBookings);
-
         when(userRepository.findById(anyLong()))
                 .thenReturn(Optional.of(user));
         when(bookingRepository.findAllByItemOwnerIdOrderByStartDesc(anyLong(), any(Pageable.class)))
                 .thenReturn(allBookings);
 
+        // when
         List<BookingResponseDto> actualBookings = bookingService.getByOwnerId(user.getId(), "ALL", 0, 10);
 
+        // then
         assertNotNull(actualBookings);
         assertThat(actualBookings.get(0).getId(), equalTo(expectedBookings.get(0).getId()));
         assertThat(actualBookings.get(0).getItem().getId(), equalTo(expectedBookings.get(0).getItem().getId()));
@@ -743,14 +800,16 @@ public class BookingServiceImplTest {
     @Test
     @DisplayName("'getByOwnerId' should throw exception when user not found")
     public void getBookingsByOwnerId_UserNotFound() {
+        // given
         Long id = 2L;
-
         when(userRepository.findById(id))
                 .thenReturn(Optional.empty());
 
+        // when
         NoSuchElementException exception = assertThrows(NoSuchElementException.class, () ->
                 bookingService.getByOwnerId(id, "ALL", 0, 10));
 
+        // then
         assertEquals(String.format("User with ID: %d not found.", id), exception.getMessage());
         verify(userRepository, times(1)).findById(id);
     }
@@ -758,14 +817,17 @@ public class BookingServiceImplTest {
     @Test
     @DisplayName("'getByOwnerId' should throw exception when state is invalid")
     public void getAllBookingsByOwnerId_InvalidState() {
+        // given
         User owner = createUser1();
         String state = "Unknown State";
+        when(userRepository.findById(anyLong()))
+                .thenReturn(Optional.of(owner));
 
-        when(userRepository.findById(anyLong())).thenReturn(Optional.of(owner));
-
+        // when
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
                 bookingService.getByOwnerId(owner.getId(), state, 0, 10));
 
+        // then
         assertEquals(String.format("Unknown state: %s", state), exception.getMessage());
         verify(userRepository, times(1)).findById(owner.getId());
     }

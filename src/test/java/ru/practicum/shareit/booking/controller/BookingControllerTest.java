@@ -45,6 +45,7 @@ public class BookingControllerTest {
     @Test
     @DisplayName("'create' should create booking successfully'")
     public void createBooking_Success() throws Exception {
+        // given
         User user = createUser1();
         ItemRequest itemRequest = createItemRequest(user);
         Item item = createItem(user, itemRequest);
@@ -55,12 +56,14 @@ public class BookingControllerTest {
         when(bookingService.create(anyLong(), any(BookingDto.class)))
                 .thenReturn(bookingResponseDto);
 
+        // when
         mvc.perform(post("/bookings")
                         .header(OWNER_ID_HEADER, user.getId())
                         .content(objectMapper.writeValueAsString(bookingDto))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
+                // then
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(bookingResponseDto.getId()), Long.class))
                 .andExpect(jsonPath("$.status", is(bookingResponseDto.getStatus().toString())));
@@ -69,6 +72,7 @@ public class BookingControllerTest {
     @Test
     @DisplayName("'update' should create booking successfully'")
     public void updateBooking_Success() throws Exception {
+        // given
         User user = createUser1();
         ItemRequest itemRequest = createItemRequest(user);
         Item item = createItem(user, itemRequest);
@@ -78,6 +82,7 @@ public class BookingControllerTest {
         when(bookingService.updateStatus(anyLong(), anyLong(), anyBoolean()))
                 .thenReturn(bookingResponseDto);
 
+        // when
         mvc.perform(patch("/bookings/{bookingId}", booking.getId())
                         .header(OWNER_ID_HEADER, user.getId())
                         .param("approved", "true")
@@ -85,6 +90,7 @@ public class BookingControllerTest {
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
+                // then
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(bookingResponseDto.getId()), Long.class))
                 .andExpect(jsonPath("$.status", is(bookingResponseDto.getStatus().toString())));
@@ -93,6 +99,7 @@ public class BookingControllerTest {
     @Test
     @DisplayName("'getByBookerId' should return all bookings by booker ID successfully'")
     public void getByBookerId_Success() throws Exception {
+        // given
         User user = createUser1();
         User booker = createUser2();
         ItemRequest itemRequest = createItemRequest(booker);
@@ -104,12 +111,14 @@ public class BookingControllerTest {
         when(bookingService.getByBookerId(anyLong(), anyString(), anyInt(), anyInt()))
                 .thenReturn(bookings);
 
+        // when
         mvc.perform(get("/bookings")
                         .header(OWNER_ID_HEADER, booker.getId())
                         .content(objectMapper.writeValueAsString(bookings))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
+                // then
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id", is(bookingResponseDto.getId()), Long.class))
                 .andExpect(jsonPath("$[0].status", is(bookingResponseDto.getStatus().toString())));
@@ -118,6 +127,7 @@ public class BookingControllerTest {
     @Test
     @DisplayName("'getByOwnerId' should return all bookings by owner ID successfully'")
     public void getByOwnerId_Success() throws Exception {
+        // given
         User user = createUser1();
         ItemRequest itemRequest = createItemRequest(user);
         Item item = createItem(user, itemRequest);
@@ -128,12 +138,14 @@ public class BookingControllerTest {
         when(bookingService.getByOwnerId(anyLong(), anyString(), anyInt(), anyInt()))
                 .thenReturn(bookings);
 
+        // when
         mvc.perform(get("/bookings/owner")
                         .header(OWNER_ID_HEADER, user.getId())
                         .content(objectMapper.writeValueAsString(bookings))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
+                // then
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id", is(bookingResponseDto.getId()), Long.class))
                 .andExpect(jsonPath("$[0].status", is(bookingResponseDto.getStatus().toString())));

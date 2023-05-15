@@ -46,17 +46,19 @@ class ItemRequestServiceImplTest {
     @Test
     @DisplayName("'create' should create item request successfully")
     void createItemRequest_Success() {
+        // given
         User requestor = createUser1();
         ItemRequest itemRequest = createItemRequest1(requestor);
         ItemRequestDto itemRequestDto = ItemRequestMapper.toItemRequestDto(itemRequest, null);
-
         when(userRepository.findById(anyLong()))
                 .thenReturn(Optional.of(requestor));
         when(itemRequestRepository.save(any(ItemRequest.class)))
                 .thenReturn(itemRequest);
 
+        // when
         ItemRequestDto actualItemRequestDto = itemRequestService.create(requestor.getId(), itemRequestDto);
 
+        // then
         assertNotNull(actualItemRequestDto);
         assertThat(actualItemRequestDto.getId(), equalTo(itemRequest.getId()));
         assertThat(actualItemRequestDto.getDescription(), equalTo(itemRequest.getDescription()));
@@ -65,16 +67,19 @@ class ItemRequestServiceImplTest {
     @Test
     @DisplayName("'create' should throw exception when user is not found")
     void createItemRequest_UserNotFound() {
+        // given
         User requestor = createUser1();
         Long id = 2L;
         ItemRequest itemRequest = createItemRequest1(requestor);
         ItemRequestDto itemRequestDto = ItemRequestMapper.toItemRequestDto(itemRequest, null);
-
         when(userRepository.findById(id))
                 .thenReturn(Optional.empty());
 
+        // when
         NoSuchElementException exception = assertThrows(NoSuchElementException.class, () ->
                 itemRequestService.create(id, itemRequestDto));
+
+        // then
         assertEquals(String.format("User with ID: %d not found.", id), exception.getMessage());
         verify(userRepository, times(1)).findById(id);
     }
@@ -82,11 +87,11 @@ class ItemRequestServiceImplTest {
     @Test
     @DisplayName("'getById' should return item request by ID")
     void getItemRequestById_Success() {
+        // given
         User requestor = createUser1();
         ItemRequest itemRequest = createItemRequest1(requestor);
         Item item = createItem(itemRequest, requestor);
         List<Item> items = List.of(item);
-
         when(userRepository.findById(anyLong()))
                 .thenReturn(Optional.of(requestor));
         when(itemRequestRepository.findById(anyLong()))
@@ -94,8 +99,10 @@ class ItemRequestServiceImplTest {
         when(itemRepository.findItemsByRequestId(anyLong()))
                 .thenReturn(items);
 
+        // when
         ItemRequestDto actualItemRequestDto = itemRequestService.getById(requestor.getId(), 1L);
 
+        // then
         assertNotNull(actualItemRequestDto);
         assertThat(actualItemRequestDto.getId(), equalTo(itemRequest.getId()));
         assertThat(actualItemRequestDto.getDescription(), equalTo(itemRequest.getDescription()));
@@ -104,16 +111,19 @@ class ItemRequestServiceImplTest {
     @Test
     @DisplayName("'getById' should throw exception when user is not found")
     void getItemRequestById_UserNotFound() {
+        // given
         User requestor = createUser1();
         Long id = 2L;
         ItemRequest itemRequest = createItemRequest1(requestor);
         ItemRequestDto itemRequestDto = ItemRequestMapper.toItemRequestDto(itemRequest, null);
-
         when(userRepository.findById(id))
                 .thenReturn(Optional.empty());
 
+        // when
         NoSuchElementException exception = assertThrows(NoSuchElementException.class, () ->
                 itemRequestService.getById(id, itemRequestDto.getId()));
+
+        // then
         assertEquals(String.format("User with ID: %d not found.", id), exception.getMessage());
         verify(userRepository, times(1)).findById(id);
     }
@@ -121,38 +131,43 @@ class ItemRequestServiceImplTest {
     @Test
     @DisplayName("'getById' should throw exception when item request is not found")
     void getItemRequestById_ItemRequestNotFound() {
+        // given
         User requestor = createUser1();
         Long id = 2L;
-
         when(userRepository.findById(anyLong()))
                 .thenReturn(Optional.of(requestor));
         when(itemRequestRepository.findById(id))
                 .thenReturn(Optional.empty());
 
+        // when
         NoSuchElementException exception = assertThrows(NoSuchElementException.class, () ->
                 itemRequestService.getById(requestor.getId(), id));
+
+        // then
         assertEquals(String.format("Request with ID: %d not found.", id), exception.getMessage());
     }
 
     @Test
     @DisplayName("'getAll' should return all item requests")
     void getAllItemRequests_Success() {
+        // given
         User requestor = createUser1();
         ItemRequest itemRequest1 = createItemRequest1(requestor);
         ItemRequest itemRequest2 = createItemRequest2(requestor);
         Item item = createItem(itemRequest1, requestor);
         List<ItemRequest> itemRequests = List.of(itemRequest1, itemRequest2);
         List<Item> items = List.of(item);
-
         when(userRepository.findById(anyLong()))
                 .thenReturn(Optional.of(requestor));
-        when(itemRequestRepository.findAllByRequestorIdNot(anyLong(), any(PageRequest.class)))
+        when(itemRequestRepository.findAllByRequestorIdNotOrderByCreatedDesc(anyLong(), any(PageRequest.class)))
                 .thenReturn(itemRequests);
         when(itemRepository.findItemsByRequestIdIn(anyList()))
                 .thenReturn(items);
 
+        // when
         List<ItemRequestDto> actualItemRequestDtos = itemRequestService.getAll(requestor.getId(), 0, 10);
 
+        // then
         assertNotNull(actualItemRequestDtos);
         assertThat(actualItemRequestDtos.size(), equalTo(itemRequests.size()));
         verify(userRepository, times(1)).findById(requestor.getId());
@@ -161,13 +176,16 @@ class ItemRequestServiceImplTest {
     @Test
     @DisplayName("'getAll' should throw exception when user is not found")
     void getAllItemRequests_UserNotFound() {
+        // given
         Long id = 2L;
-
         when(userRepository.findById(id))
                 .thenReturn(Optional.empty());
 
+        // when
         NoSuchElementException exception = assertThrows(NoSuchElementException.class, () ->
                 itemRequestService.getAll(id, 0, 10));
+
+        // then
         assertEquals(String.format("User with ID: %d not found.", id), exception.getMessage());
         verify(userRepository, times(1)).findById(id);
     }
@@ -175,13 +193,13 @@ class ItemRequestServiceImplTest {
     @Test
     @DisplayName("'getAllOwn' should return all own item requests")
     void getAllOwnItemRequests_Success() {
+        // given
         User owner = createUser1();
         User requestor = createUser2();
         ItemRequest itemRequest1 = createItemRequest1(requestor);
         Item item = createItem(itemRequest1, owner);
         List<ItemRequest> itemRequests = List.of(itemRequest1);
         List<Item> items = List.of(item);
-
         when(userRepository.findById(anyLong()))
                 .thenReturn(Optional.of(requestor));
         when(itemRepository.findItemsByRequestIdIn(anyList()))
@@ -189,8 +207,10 @@ class ItemRequestServiceImplTest {
         when(itemRequestRepository.findAllByRequestorId(anyLong(), any(PageRequest.class)))
                 .thenReturn(itemRequests);
 
+        // when
         List<ItemRequestDto> actualItemRequestDtos = itemRequestService.getAllOwn(requestor.getId(), 0, 10);
 
+        // then
         assertNotNull(actualItemRequestDtos);
         assertThat(actualItemRequestDtos.size(), equalTo(itemRequests.size()));
         verify(userRepository, times(1)).findById(requestor.getId());
@@ -199,13 +219,16 @@ class ItemRequestServiceImplTest {
     @Test
     @DisplayName("'getAllOwn' should throw exception when user is not found")
     void getAllOwnItemRequests_UserNotFound() {
+        // given
         Long id = 2L;
-
         when(userRepository.findById(id))
                 .thenReturn(Optional.empty());
 
+        // when
         NoSuchElementException exception = assertThrows(NoSuchElementException.class, () ->
                 itemRequestService.getAllOwn(id, 0, 10));
+
+        // then
         assertEquals(String.format("User with ID: %d not found.", id), exception.getMessage());
         verify(userRepository, times(1)).findById(id);
     }

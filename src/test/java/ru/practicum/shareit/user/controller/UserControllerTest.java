@@ -39,17 +39,20 @@ class UserControllerTest {
     @Test
     @DisplayName("'create' should create user successfully")
     void createUser_Success() throws Exception {
+        // given
         User user = createUser1();
 
         when(userService.create(any()))
                 .thenReturn(UserMapper.toUserDto(user));
 
+        // when
         mvc.perform(post("/users")
                         .header(OWNER_ID_HEADER, user.getId())
                         .content(objectMapper.writeValueAsString(UserMapper.toUserDto(user)))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
+                // then
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(user.getId()), Long.class))
                 .andExpect(jsonPath("$.name", is(user.getName())))
@@ -59,16 +62,19 @@ class UserControllerTest {
     @Test
     @DisplayName("'update' should update user successfully")
     void updateUser_Success() throws Exception {
+        // given
         User user = createUser1();
 
         when(userService.update(anyLong(), any()))
                 .thenReturn(UserMapper.toUserDto(user));
 
+        // when
         mvc.perform(patch("/users/{userId}", user.getId())
                         .content(objectMapper.writeValueAsString(UserMapper.toUserDto(user)))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
+                // then
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(user.getId()), Long.class))
                 .andExpect(jsonPath("$.name", is(user.getName())))
@@ -78,6 +84,7 @@ class UserControllerTest {
     @Test
     @DisplayName("'getAll' should return all users successfully")
     void getAllUsers_Success() throws Exception {
+        // given
         User user1 = createUser1();
         User user2 = createUser2();
         List<User> users = List.of(user1, user2);
@@ -85,7 +92,9 @@ class UserControllerTest {
         when(userService.getAll())
                 .thenReturn(UserMapper.toUserDto(users));
 
+        // when
         mvc.perform(get("/users"))
+                // then
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id", is(user1.getId()), Long.class))
                 .andExpect(jsonPath("$[0].name", is(user1.getName())))
@@ -99,12 +108,15 @@ class UserControllerTest {
     @Test
     @DisplayName("'getById' should return user by ID successfully")
     void getUserById_Success() throws Exception {
+        // given
         User user = createUser1();
 
         when(userService.getById(anyLong()))
                 .thenReturn(UserMapper.toUserDto(user));
 
+        // when
         mvc.perform(get("/users/{userId}", user.getId()))
+                // then
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(user.getId()), Long.class))
                 .andExpect(jsonPath("$.name", is(user.getName())))
@@ -114,9 +126,12 @@ class UserControllerTest {
     @Test
     @DisplayName("'delete' should delete user successfully")
     void deleteUserById_Success() throws Exception {
+        // given
         User user = createUser1();
 
+        // when
         mvc.perform(delete("/users/{userId}", user.getId()))
+                // then
                 .andExpect(status().isOk());
     }
 

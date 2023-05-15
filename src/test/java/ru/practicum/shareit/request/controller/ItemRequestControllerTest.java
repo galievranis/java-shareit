@@ -40,6 +40,7 @@ class ItemRequestControllerTest {
     @Test
     @DisplayName("'create' should create item request successfully")
     public void createItemRequest_Success() throws Exception {
+        // given
         User requestor = createUser1();
         ItemRequest itemRequest = createItemRequest1(requestor);
         ItemRequestDto itemRequestDto = ItemRequestMapper.toItemRequestDto(itemRequest, null);
@@ -47,12 +48,14 @@ class ItemRequestControllerTest {
         when(itemRequestService.create(anyLong(), any(ItemRequestDto.class)))
                 .thenReturn(itemRequestDto);
 
+        // when
         mvc.perform(post("/requests")
                         .header(OWNER_ID_HEADER, requestor.getId())
                         .content(objectMapper.writeValueAsString(itemRequestDto))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
+                // then
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(itemRequestDto.getId()), Long.class))
                 .andExpect(jsonPath("$.description", is(itemRequestDto.getDescription())));
@@ -61,6 +64,7 @@ class ItemRequestControllerTest {
     @Test
     @DisplayName("'getAll' should return all item requests successfully")
     void getAllItemRequests_Success() throws Exception {
+        // given
         User requestor = createUser1();
         ItemRequest itemRequest1 = createItemRequest1(requestor);
         ItemRequest itemRequest2 = createItemRequest2(requestor);
@@ -71,12 +75,14 @@ class ItemRequestControllerTest {
         when(itemRequestService.getAll(anyLong(), anyInt(), anyInt()))
                 .thenReturn(itemRequestDtos);
 
+        // when
         mvc.perform(get("/requests/all")
                         .header(OWNER_ID_HEADER, requestor.getId())
                         .content(objectMapper.writeValueAsString(itemRequestDtos))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
+                // then
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id", is(itemRequestDto1.getId()), Long.class))
                 .andExpect(jsonPath("$[0].description", is(itemRequestDto1.getDescription())))
@@ -89,6 +95,7 @@ class ItemRequestControllerTest {
     @Test
     @DisplayName("'getAllOwn' should return all own item requests successfully")
     void getAllOwnItemRequests_Success() throws Exception {
+        // given
         User requestor1 = createUser1();
         ItemRequest itemRequest1 = createItemRequest1(requestor1);
         ItemRequestDto itemRequestDto1 = ItemRequestMapper.toItemRequestDto(itemRequest1, null);
@@ -97,12 +104,14 @@ class ItemRequestControllerTest {
         when(itemRequestService.getAllOwn(anyLong(), anyInt(), anyInt()))
                 .thenReturn(itemRequestDtos1);
 
+        // when
         mvc.perform(get("/requests")
                         .header(OWNER_ID_HEADER, requestor1.getId())
                         .content(objectMapper.writeValueAsString(itemRequestDtos1))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
+                // then
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id", is(itemRequestDto1.getId()), Long.class))
                 .andExpect(jsonPath("$[0].description", is(itemRequestDto1.getDescription())))
@@ -112,6 +121,7 @@ class ItemRequestControllerTest {
     @Test
     @DisplayName("'getById' should return item request successfully")
     void getItemRequestById_Success() throws Exception {
+        // given
         User requestor = createUser1();
         ItemRequest itemRequest = createItemRequest1(requestor);
         ItemRequestDto itemRequestDto = ItemRequestMapper.toItemRequestDto(itemRequest, null);
@@ -119,12 +129,14 @@ class ItemRequestControllerTest {
         when(itemRequestService.getById(anyLong(), anyLong()))
                 .thenReturn(itemRequestDto);
 
+        // when
         mvc.perform(get("/requests/{requestId}", itemRequestDto.getId())
                         .header(OWNER_ID_HEADER, requestor.getId())
                         .content(objectMapper.writeValueAsString(itemRequestDto))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
+                // then
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(itemRequestDto.getId()), Long.class))
                 .andExpect(jsonPath("$.description", is(itemRequestDto.getDescription())))

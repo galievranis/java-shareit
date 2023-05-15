@@ -31,6 +31,7 @@ public class ItemRepositoryTest {
     @Test
     @DisplayName("'search' should return list with item by search criteria successfully")
     public void returnItemsBySearchCriteria_Success() {
+        // given
         User user1 = User.builder()
                 .name("User 1")
                 .email("user1Email@mail.ru")
@@ -74,8 +75,10 @@ public class ItemRepositoryTest {
         em.persist(item1);
         em.persist(item2);
 
+        // when
         List<Item> actualItems = itemRepository.search("XBOX", OffsetPageRequest.of(0, 10));
 
+        // then
         assertNotNull(actualItems);
         assertThat(actualItems.size(), equalTo(1));
         assertThat(actualItems.get(0).getId(), equalTo(item1.getId()));
@@ -89,6 +92,7 @@ public class ItemRepositoryTest {
     @Test
     @DisplayName("'search' should return empty list by search criteria")
     public void returnEmptyListBySearchCriteria_Success() {
+        // given
         User user1 = User.builder()
                 .name("User 1")
                 .email("user1Email@mail.ru")
@@ -132,7 +136,10 @@ public class ItemRepositoryTest {
         em.persist(item1);
         em.persist(item2);
 
+        // when
         List<Item> actualItems = itemRepository.search("console by Nintendo", OffsetPageRequest.of(0, 10));
+
+        // then
         assertNotNull(actualItems);
         assertThat(actualItems.size(), equalTo(0));
     }

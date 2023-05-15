@@ -49,9 +49,11 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         PaginationValidator.validate(from, size);
         Pageable pageable = OffsetPageRequest.of(from, size);
 
-        List<ItemRequest> itemRequests = itemRequestRepository.findAllByRequestorIdNot(userId, pageable).stream()
-                .sorted(Comparator.comparing(ItemRequest::getCreated))
-                .collect(Collectors.toList());
+//        List<ItemRequest> itemRequests = itemRequestRepository.findAllByRequestorIdNotOrderByCreatedDesc(userId, pageable).stream()
+//                .sorted(Comparator.comparing(ItemRequest::getCreated))
+//                .collect(Collectors.toList());
+
+        List<ItemRequest> itemRequests = itemRequestRepository.findAllByRequestorIdNotOrderByCreatedDesc(userId, pageable);
 
         List<Long> itemRequestIds = itemRequests.stream()
                 .map(ItemRequest::getId)
