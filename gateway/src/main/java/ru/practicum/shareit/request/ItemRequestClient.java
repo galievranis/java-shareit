@@ -9,9 +9,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.shareit.client.BaseClient;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
-import ru.practicum.shareit.util.validator.pagination.PaginationValidator;
 
 import java.util.Map;
+
+import static ru.practicum.shareit.util.validator.pagination.PaginationValidator.validateSize;
 
 @Service
 public class ItemRequestClient extends BaseClient {
@@ -33,7 +34,7 @@ public class ItemRequestClient extends BaseClient {
     }
 
     public ResponseEntity<Object> getAllOwn(Long userId, Integer from, Integer size) {
-        PaginationValidator.validate(size);
+        validateSize(size);
         Map<String, Object> parameters = Map.of(
                 "from", from,
                 "size", size
@@ -42,7 +43,7 @@ public class ItemRequestClient extends BaseClient {
     }
 
     public ResponseEntity<Object> getAll(Long userId, Integer from, Integer size) {
-        PaginationValidator.validate(size);
+        validateSize(size);
         Map<String, Object> parameters = Map.of(
                 "from", from,
                 "size", size

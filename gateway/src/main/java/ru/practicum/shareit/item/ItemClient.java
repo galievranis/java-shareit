@@ -10,9 +10,10 @@ import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.shareit.client.BaseClient;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.util.validator.pagination.PaginationValidator;
 
 import java.util.Map;
+
+import static ru.practicum.shareit.util.validator.pagination.PaginationValidator.validateSize;
 
 @Service
 public class ItemClient extends BaseClient {
@@ -38,7 +39,7 @@ public class ItemClient extends BaseClient {
     }
 
     public ResponseEntity<Object> getAll(Long userId, Integer from, Integer size) {
-        PaginationValidator.validate(size);
+        validateSize(size);
         Map<String, Object> parameters = Map.of(
                 "from", from,
                 "size", size
@@ -51,7 +52,7 @@ public class ItemClient extends BaseClient {
     }
 
     public ResponseEntity<Object> searchItem(Long userId, String text, Integer from, Integer size) {
-        PaginationValidator.validate(size);
+        validateSize(size);
         Map<String, Object> parameters = Map.of(
                 "text", text,
                 "from", from,
