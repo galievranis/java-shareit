@@ -1,7 +1,6 @@
 package ru.practicum.shareit.booking.model.dto;
 
 import lombok.*;
-import ru.practicum.shareit.util.start.StartBeforeEndDateValid;
 
 import java.time.LocalDateTime;
 
@@ -10,7 +9,6 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@StartBeforeEndDateValid
 public class BookingDto {
     private long id;
     private LocalDateTime start;

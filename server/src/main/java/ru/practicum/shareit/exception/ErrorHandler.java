@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import javax.validation.ConstraintViolationException;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
@@ -55,13 +54,6 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handleIllegalArgumentEx(final RuntimeException e) {
         log.warn("Invalid value. Error details: {}.", e.getMessage());
-        return Map.of(ERROR, e.getMessage());
-    }
-
-    @ExceptionHandler({ConstraintViolationException.class})
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, String> handleConstraintViolationException(ConstraintViolationException e) {
-        log.info(e.getMessage());
         return Map.of(ERROR, e.getMessage());
     }
 }
