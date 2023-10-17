@@ -15,8 +15,8 @@
 Отвечает за валидацию запросов от пользователей.
 
 ## Стек технологий
-Java
-Spring Boot
-PostgreSQL
-Maven
-Docker
+- Java
+- Spring Boot
+- PostgreSQL
+- Maven
+- Docker
